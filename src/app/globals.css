@@ -1,26 +1,159 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* VentSafe Light Theme Colors */
+  --color-ventsafe-background: #eff0ff;
+  --color-ventsafe-foreground: #000562;
+  --color-ventsafe-navy: #1e28a0;
+  --color-ventsafe-primary: #000681;
+  --color-ventsafe-primary-foreground: #f3f3ff;
+  --color-ventsafe-secondary: #2d3ba8;
+  --color-ventsafe-accent: #4f5fd9;
+  --color-ventsafe-muted: #e5e7f0;
+  --color-ventsafe-border: #d1d5e4;
+  --color-ventsafe-black: #000000;
+  --color-ventsafe-social: #000562;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Font size */
+  --text-ventsafe-tiny: 12px;
+  --text-ventsafe-st: 16px;
+  --text-ventsafe-btn-sm: 14px;
+  --text-ventsafe-btn-lg: 18px;
+  --text-ventsafe-tw: 20px;
+  --text-ventsafe-des: 24px;
+  --text-ventsafe-des-lg: 28px;
+  --text-ventsafe-sub-heading: 32px;
+  --text-ventsafe-title: 40px;
+  --text-ventsafe-heading: 70px;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Border radius */
+  --radius-ventsafe-tiny: 7px;
+  --radius-ventsafe-sm: 10px;
+  --radius-ventsafe-md: 15px;
+  --radius-ventsafe-full: 50px;
+  --radius-ventsafe-max: 100px;
+
+  /* Font family */
+  --font-ventsafe-font: "Montserrat", sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-ventsafe-background);
+  color: var(--color-ventsafe-foreground);
+  font-family: var(--font-ventsafe-font);
+}
+
+/* Custom utilities */
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(to right, #2563eb, #9333ea);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Animation delays */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+}
+
+/* Custom animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse animation */
+@keyframes pulse-strong {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-strong {
+  animation: pulse-strong 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-ventsafe-navy);
+  width: 24px;
+  height: 24px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Typewriter animation */
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 0.15em solid var(--color-ventsafe-foreground);
+  white-space: nowrap;
+  animation:
+    typewriter 2s steps(40, end),
+    blink 0.75s step-end infinite;
 }
