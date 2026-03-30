@@ -12,7 +12,7 @@
         ]
       }
     ],
-    "no-inline-styles": "off",
+      "no-inline-styles": "on",
     "axe/forms": [
       "default",
       {

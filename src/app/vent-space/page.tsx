@@ -1,91 +1,298 @@
 "use client";
 
-import { useState } from "react";
-import { Footer } from "@/components/shared/Footer";
-import { Logo } from "@/components/shared/Logo";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { RouteGuard } from "@/components/providers/RouteGuard";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { PostCard, type PostViewData } from "@/components/shared/PostCard";
+import { CreateVentModal } from "@/components/shared/CreateVentModal";
+import { MoodSlider } from "@/components/shared/MoodSlider";
+import { OnlineCounsellors } from "@/components/shared/OnlineCounsellors";
 import { useAuth } from "@/hooks/useAuth";
-import { LogoutModal } from "@/components/shared/LogoutModal";
+import { API_BASE_URL, STORAGE_KEYS } from "@/config/constants";
 
-function VentSpaceContent() {
-  const { anonymousName, logout, gender } = useAuth();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  return (
-    <div className="min-h-screen bg-ventsafe-background flex flex-col">
-      {/* Header */}
-      <header className="p-6 border-b border-ventsafe-border/20">
-        <div className="container mx-auto flex items-center justify-between">
-          <Logo />
-
-          {/* Anonymous name in header */}
-          {anonymousName && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-ventsafe-foreground/10 border border-ventsafe-foreground/30 flex items-center justify-center">
-                <span className="text-xs font-bold text-ventsafe-foreground">
-                  {anonymousName.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <span className="text-sm font-medium text-ventsafe-foreground">
-                {anonymousName}
-              </span>
-            </div>
-          )}
-
-          <nav className="flex items-center gap-6">
-            <Link href="/social-media" className="text-sm font-medium text-ventsafe-navy">Feed</Link>
-            <Link href="/resources" className="text-sm font-medium text-ventsafe-foreground/70 hover:text-ventsafe-navy">Resources</Link>
-            <Link href="/vent" className="text-sm font-medium text-ventsafe-foreground/70 hover:text-ventsafe-navy">Vent</Link>
-            <Link href="/profile" className="text-sm font-medium text-ventsafe-foreground/70 hover:text-ventsafe-navy">Profile</Link>
-            <button
-              onClick={() => setShowLogoutModal(true)}
-              className="text-sm font-medium text-ventsafe-foreground/50 hover:text-red-500 transition-colors cursor-pointer"
-            >
-              Log Out
-            </button>
-
-      <LogoutModal
-        isOpen={showLogoutModal}
-        currentName={anonymousName}
-        gender={gender}
-        onConfirm={() => { setShowLogoutModal(false); logout(); }}
-        onCancel={() => setShowLogoutModal(false)}
-      />
-          </nav>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-ventsafe-foreground mb-2">
-            {anonymousName ? `Welcome, ${anonymousName}` : "Welcome to Your Feed"}
-          </h1>
-          <p className="text-lg text-ventsafe-foreground/70 mb-8">
-            This is your anonymous safe space. Share your thoughts, connect with others, and find support.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <button className="bg-ventsafe-navy text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity">
-              Create Post
-            </button>
-            <button className="border-2 border-ventsafe-navy text-ventsafe-navy px-8 py-3 rounded-lg font-medium hover:bg-ventsafe-navy hover:text-white transition-colors">
-              Explore Resources
-            </button>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
-  );
+interface QuickResource {
+  id: string;
+  title: string;
+  category: string;
 }
 
-// Wrap with RouteGuard — unauthenticated users get redirected to /login
 export default function VentSpacePage() {
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<PostViewData[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [quickResources, setQuickResources] = useState<QuickResource[]>([]);
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  const token =
+    (typeof window !== "undefined"
+      ? localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+      : null) ?? "";
+
+  const authorName =
+    user?.anonymousName ||
+    (typeof window !== "undefined"
+      ? (localStorage.getItem(STORAGE_KEYS.ANONYMOUS_ID) ?? "Anonymous")
+      : "Anonymous");
+
+  const viewerUserId = user?.id ?? "";
+  const viewerRole = user?.role ?? "student";
+
+  // ── Fetch feed ─────────────────────────────────────────────────────────────
+
+  const fetchPosts = useCallback(
+    async (pageNum: number, replace = false) => {
+      if (!token) return;
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/posts?page=${pageNum}&limit=20`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        const data = await res.json();
+        if (data.success) {
+          const newPosts: PostViewData[] = data.data.posts;
+          setPosts((prev) => (replace ? newPosts : [...prev, ...newPosts]));
+          setHasMore(data.data.hasMore);
+        }
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [token],
+  );
+
+  useEffect(() => {
+    fetchPosts(1, true);
+  }, [fetchPosts]);
+
+  // ── Fetch quick resources ──────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API_BASE_URL}/resources?limit=3`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setQuickResources(data.data.resources.slice(0, 3));
+      })
+      .catch(() => {});
+  }, [token]);
+
+  // ── Infinite scroll ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          fetchPosts(nextPage);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loading, page, fetchPosts]);
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
+  const handlePosted = (newPost: PostViewData) => {
+    setPosts((prev) => [newPost, ...prev]);
+  };
+
+  const handleDelete = (id: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    anxiety: "Anxiety",
+    depression: "Depression",
+    academic: "Academic",
+    financial: "Financial",
+    relationships: "Relationships",
+    family: "Family",
+    health: "Health",
+    crisis: "Crisis",
+    general: "General",
+  };
+
   return (
-    <RouteGuard>
-      <VentSpaceContent />
-    </RouteGuard>
+    <AppLayout>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+          {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
+          <div className="space-y-4">
+            {/* Vent Composer */}
+            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
+                  {authorName.charAt(0)}
+                </div>
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="flex-1 text-left px-4 py-2.5 bg-ventsafe-muted rounded-ventsafe-full text-sm text-ventsafe-foreground/40 hover:bg-ventsafe-border/30 transition-colors"
+                >
+                  Start a vent
+                </button>
+              </div>
+              <p className="text-xs text-ventsafe-foreground/40 mt-2 ml-12 flex items-center gap-3">
+                <span>How are you feeling today?</span>
+                <span>Tell your recovery story.</span>
+                <span>Express yourself. No Judgment here.</span>
+              </p>
+            </div>
+
+            {/* Mood Slider */}
+            <MoodSlider token={token} />
+
+            {/* Available Counsellors */}
+            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+              <OnlineCounsellors token={token} />
+            </div>
+
+            {/* Feed */}
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4 animate-pulse"
+                  >
+                    <div className="flex gap-3 mb-3">
+                      <div className="w-9 h-9 rounded-full bg-ventsafe-muted" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3 bg-ventsafe-muted rounded w-24" />
+                        <div className="h-2.5 bg-ventsafe-muted rounded w-16" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-ventsafe-muted rounded" />
+                      <div className="h-3 bg-ventsafe-muted rounded w-4/5" />
+                      <div className="h-3 bg-ventsafe-muted rounded w-3/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-8 text-center">
+                <p className="text-lg font-semibold text-ventsafe-foreground mb-1">
+                  No vents yet
+                </p>
+                <p className="text-sm text-ventsafe-foreground/50 mb-4">
+                  Be the first to share something. This is your safe space.
+                </p>
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="px-5 py-2 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-tiny font-medium text-sm hover:opacity-90 transition-opacity"
+                >
+                  Start a vent
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <AnimatePresence initial={false}>
+                  {posts.map((post) => (
+                    <PostCard
+                      key={`${post.id}-${post.reposted_by_id ?? "direct"}`}
+                      post={post}
+                      viewerUserId={viewerUserId}
+                      viewerRole={viewerRole}
+                      token={token}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </AnimatePresence>
+
+                {/* Infinite scroll loader */}
+                <div ref={loaderRef} className="py-2">
+                  {loadingMore && (
+                    <div className="flex justify-center py-4">
+                      <div className="spinner" />
+                    </div>
+                  )}
+                  {!hasMore && posts.length > 0 && (
+                    <p className="text-center text-xs text-ventsafe-foreground/30 py-4">
+                      You&apos;ve reached the end
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── RIGHT COLUMN ────────────────────────────────────────────── */}
+          <div className="hidden lg:block space-y-4">
+            {/* Quick Resources */}
+            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+              <h3 className="text-sm font-bold text-ventsafe-foreground mb-3">
+                Quick Resources
+              </h3>
+              {quickResources.length === 0 ? (
+                <p className="text-xs text-ventsafe-foreground/40">
+                  No resources yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {quickResources.map((r) => (
+                    <Link
+                      key={r.id}
+                      href={`/resources`}
+                      className="block border border-ventsafe-border rounded-ventsafe-sm p-3 hover:border-ventsafe-navy transition-colors"
+                    >
+                      <p className="text-sm font-medium text-ventsafe-foreground leading-snug">
+                        {r.title}
+                      </p>
+                      <p className="text-xs text-ventsafe-foreground/50 mt-0.5 capitalize">
+                        {CATEGORY_LABELS[r.category] ?? r.category}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <Link
+                href="/resources"
+                className="flex items-center gap-1 text-xs text-ventsafe-navy font-medium mt-3 hover:underline"
+              >
+                View All Resources <ChevronRight size={12} />
+              </Link>
+            </div>
+
+            {/* Communities Banner */}
+            <div className="bg-gradient-to-br from-ventsafe-navy to-ventsafe-accent text-white rounded-ventsafe-md p-5 space-y-2">
+              <BookOpen size={20} className="opacity-70" />
+              <h3 className="font-bold text-sm leading-tight">
+                View Different Communities on VentSafe
+              </h3>
+              <p className="text-xs opacity-70 leading-relaxed">
+                Connect with others going through similar experiences.
+              </p>
+              <button className="w-full py-2 bg-white text-ventsafe-foreground rounded-ventsafe-sm text-xs font-semibold hover:bg-white/90 transition-colors mt-1">
+                Explore Communities
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Create Vent Modal */}
+      <CreateVentModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        token={token}
+        authorName={authorName}
+        onPosted={handlePosted}
+      />
+    </AppLayout>
   );
 }
