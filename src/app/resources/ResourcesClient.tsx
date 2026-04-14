@@ -19,7 +19,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
-import { API_BASE_URL, STORAGE_KEYS } from "@/config/constants";
+import { API_BASE_URL } from "@/config/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +40,23 @@ interface ResourceData {
   viewer_reaction: "like" | "dislike" | null;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+interface ReactResult {
+  reaction: "like" | "dislike" | null;
+  likes_count: number;
+  dislikes_count: number;
+}
+
+interface ViewStats {
+  total_views: number;
+  unique_viewers: number;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
@@ -55,18 +72,26 @@ const CATEGORIES = [
 ];
 
 const WRITE_CATEGORIES = [
-  { value: "anxiety", label: "Anxiety" },
-  { value: "depression", label: "Depression" },
-  { value: "relationships", label: "Relationships" },
-  { value: "academic", label: "Academic" },
-  { value: "financial", label: "Financial" },
-  { value: "health", label: "Health" },
-  { value: "family", label: "Family" },
-  { value: "crisis", label: "Crisis" },
-  { value: "general", label: "General" },
+  "anxiety",
+  "depression",
+  "relationships",
+  "academic",
+  "financial",
+  "health",
+  "family",
+  "crisis",
+  "general",
 ];
 
-// ─── Write Article Modal (counsellors only) ───────────────────────────────────
+// ─── Write Article Modal ──────────────────────────────────────────────────────
+
+interface WriteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  token: string;
+  editResource: ResourceData | null;
+  onSaved: (resource: ResourceData) => void;
+}
 
 function WriteArticleModal({
   isOpen,
@@ -74,17 +99,11 @@ function WriteArticleModal({
   token,
   editResource,
   onSaved,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  token: string;
-  editResource?: ResourceData | null;
-  onSaved: (resource: ResourceData) => void;
-}) {
-  const [title, setTitle] = useState(editResource?.title ?? "");
-  const [content, setContent] = useState(editResource?.content ?? "");
-  const [excerpt, setExcerpt] = useState(editResource?.excerpt ?? "");
-  const [category, setCategory] = useState(editResource?.category ?? "general");
+}: WriteModalProps) {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [category, setCategory] = useState("general");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -127,13 +146,15 @@ function WriteArticleModal({
           category,
         }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as ApiResponse<ResourceData>;
       if (data.success) {
         onSaved(data.data);
         onClose();
       } else {
         setError(data.error ?? "Failed to save.");
       }
+    } catch {
+      setError("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -157,8 +178,6 @@ function WriteArticleModal({
             {editResource ? "Edit Article" : "Write a Resource Article"}
           </h2>
           <button
-            title="close"
-            type="button"
             onClick={onClose}
             className="p-1.5 hover:bg-ventsafe-muted rounded-ventsafe-sm"
           >
@@ -197,14 +216,13 @@ function WriteArticleModal({
               Category *
             </label>
             <select
-              title="categories"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2.5 text-sm focus:outline-none focus:border-ventsafe-navy bg-white"
+              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2.5 text-sm focus:outline-none focus:border-ventsafe-navy bg-white capitalize"
             >
               {WRITE_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
+                <option key={c} value={c} className="capitalize">
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
                 </option>
               ))}
             </select>
@@ -229,7 +247,7 @@ function WriteArticleModal({
           {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
 
           <button
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             disabled={saving || !title.trim() || !content.trim()}
             className="w-full py-2.5 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-sm font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
@@ -247,6 +265,38 @@ function WriteArticleModal({
 
 // ─── Resource Card ────────────────────────────────────────────────────────────
 
+interface ResourceCardProps {
+  resource: ResourceData;
+  token: string;
+  viewerUserId: string;
+  viewerRole: string;
+  onEdit?: (r: ResourceData) => void;
+  onDelete?: (id: string) => void;
+}
+
+// Helper — only used inside ResourceCard but needs to be accessible
+function MoreHorizontal({
+  size,
+  className,
+}: {
+  size: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <circle cx="5" cy="12" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="19" cy="12" r="2" />
+    </svg>
+  );
+}
+
 function ResourceCard({
   resource: initialResource,
   token,
@@ -254,21 +304,11 @@ function ResourceCard({
   viewerRole,
   onEdit,
   onDelete,
-}: {
-  resource: ResourceData;
-  token: string;
-  viewerUserId: string;
-  viewerRole: string;
-  onEdit?: (r: ResourceData) => void;
-  onDelete?: (id: string) => void;
-}) {
-  const [resource, setResource] = useState(initialResource);
+}: ResourceCardProps) {
+  const [resource, setResource] = useState<ResourceData>(initialResource);
   const [expanded, setExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [viewStats, setViewStats] = useState<{
-    total_views: number;
-    unique_viewers: number;
-  } | null>(null);
+  const [viewStats, setViewStats] = useState<ViewStats | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState("");
 
@@ -276,43 +316,51 @@ function ResourceCard({
   const isCounsellor = viewerRole === "counselor";
   const isLong = resource.content.length > 350;
 
-  const handleReact = async (reaction: "like" | "dislike") => {
-    const res = await fetch(`${API_BASE_URL}/resources/${resource.id}/react`, {
-      method: "POST",
+  const callApi = async <T = unknown>(
+    url: string,
+    method: string,
+    body?: object,
+  ): Promise<ApiResponse<T>> => {
+    const res = await fetch(`${API_BASE_URL}${url}`, {
+      method,
       headers: {
-        "Content-Type": "application/json",
+        ...(body ? { "Content-Type": "application/json" } : {}),
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ reaction }),
+      ...(body ? { body: JSON.stringify(body) } : {}),
     });
-    const data = await res.json();
-    if (data.success) {
+    return res.json() as Promise<ApiResponse<T>>;
+  };
+
+  const handleReact = async (reaction: "like" | "dislike") => {
+    const res = await callApi<ReactResult>(
+      `/resources/${resource.id}/react`,
+      "POST",
+      { reaction },
+    );
+    if (res.success) {
       setResource((r) => ({
         ...r,
-        viewer_reaction: data.data.reaction,
-        likes_count: data.data.likes_count,
-        dislikes_count: data.data.dislikes_count,
+        viewer_reaction: res.data.reaction,
+        likes_count: res.data.likes_count,
+        dislikes_count: res.data.dislikes_count,
       }));
     }
   };
 
   const handlePin = async () => {
-    const res = await fetch(`${API_BASE_URL}/resources/${resource.id}/pin`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.success)
-      setResource((r) => ({ ...r, is_pinned: data.data.is_pinned }));
+    const res = await callApi<{ is_pinned: boolean }>(
+      `/resources/${resource.id}/pin`,
+      "PATCH",
+    );
+    if (res.success) {
+      setResource((r) => ({ ...r, is_pinned: res.data.is_pinned }));
+    }
   };
 
   const handleDelete = async () => {
-    const res = await fetch(`${API_BASE_URL}/resources/${resource.id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.success && onDelete) onDelete(resource.id);
+    const res = await callApi<null>(`/resources/${resource.id}`, "DELETE");
+    if (res.success && onDelete) onDelete(resource.id);
   };
 
   const handleViewStats = async () => {
@@ -320,21 +368,17 @@ function ResourceCard({
       setViewStats(null);
       return;
     }
-    const res = await fetch(`${API_BASE_URL}/resources/${resource.id}/views`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.success) setViewStats(data.data);
+    const res = await callApi<ViewStats>(
+      `/resources/${resource.id}/views`,
+      "GET",
+    );
+    if (res.success) setViewStats(res.data);
   };
 
   const handleReport = async () => {
-    await fetch(`${API_BASE_URL}/resources/${resource.id}/report`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ reason: reportReason }),
+    if (!reportReason.trim()) return;
+    await callApi<null>(`/resources/${resource.id}/report`, "POST", {
+      reason: reportReason,
     });
     setShowReport(false);
     setReportReason("");
@@ -346,12 +390,10 @@ function ResourceCard({
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white border rounded-ventsafe-md overflow-hidden transition-all ${
-        resource.is_pinned ? "border-ventsafe-navy" : "border-ventsafe-border"
-      }`}
+      className={`bg-white border rounded-ventsafe-md overflow-hidden transition-all ${resource.is_pinned ? "border-ventsafe-navy" : "border-ventsafe-border"
+        }`}
     >
       <div className="p-5">
-        {/* Pin indicator */}
         {resource.is_pinned && (
           <div className="flex items-center gap-1 text-ventsafe-navy text-[11px] font-semibold mb-2">
             <Pin size={11} /> Pinned
@@ -386,25 +428,15 @@ function ResourceCard({
             </div>
           </div>
 
-          {/* Menu */}
           <div className="relative shrink-0">
             <button
-              type="button"
-              title="Edit"
               onClick={() => setMenuOpen((o) => !o)}
               className="p-1.5 hover:bg-ventsafe-muted rounded transition-colors"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
+              <MoreHorizontal
+                size={16}
                 className="text-ventsafe-foreground/40"
-              >
-                <circle cx="12" cy="5" r="2" />
-                <circle cx="12" cy="12" r="2" />
-                <circle cx="12" cy="19" r="2" />
-              </svg>
+              />
             </button>
             <AnimatePresence>
               {menuOpen && (
@@ -426,20 +458,20 @@ function ResourceCard({
                         <Pencil size={13} /> Edit article
                       </button>
                       <button
-                        onClick={handlePin}
+                        onClick={() => void handlePin()}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted"
                       >
                         <Pin size={13} /> {resource.is_pinned ? "Unpin" : "Pin"}{" "}
                         article
                       </button>
                       <button
-                        onClick={handleViewStats}
+                        onClick={() => void handleViewStats()}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted"
                       >
                         <BarChart2 size={13} /> View stats
                       </button>
                       <button
-                        onClick={handleDelete}
+                        onClick={() => void handleDelete()}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
                       >
                         <Trash2 size={13} /> Delete
@@ -463,7 +495,7 @@ function ResourceCard({
           </div>
         </div>
 
-        {/* View stats inline */}
+        {/* View stats */}
         {viewStats && (
           <div className="bg-ventsafe-muted rounded-ventsafe-sm px-3 py-2 mb-3 flex items-center gap-4">
             <span className="text-xs text-ventsafe-foreground/70 flex items-center gap-1">
@@ -500,12 +532,11 @@ function ResourceCard({
         {/* Actions */}
         <div className="flex items-center gap-3 pt-3 border-t border-ventsafe-border/30">
           <button
-            onClick={() => handleReact("like")}
-            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-ventsafe-sm transition-colors ${
-              resource.viewer_reaction === "like"
+            onClick={() => void handleReact("like")}
+            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-ventsafe-sm transition-colors ${resource.viewer_reaction === "like"
                 ? "text-ventsafe-navy bg-ventsafe-muted"
                 : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
-            }`}
+              }`}
           >
             <ThumbsUp
               size={13}
@@ -517,12 +548,11 @@ function ResourceCard({
           </button>
 
           <button
-            onClick={() => handleReact("dislike")}
-            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-ventsafe-sm transition-colors ${
-              resource.viewer_reaction === "dislike"
+            onClick={() => void handleReact("dislike")}
+            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-ventsafe-sm transition-colors ${resource.viewer_reaction === "dislike"
                 ? "text-red-500 bg-red-50"
                 : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
-            }`}
+              }`}
           >
             <ThumbsDown
               size={13}
@@ -556,8 +586,9 @@ function ResourceCard({
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={handleReport}
-                    className="px-3 py-1.5 bg-red-500 text-white rounded-ventsafe-sm text-xs font-medium"
+                    onClick={() => void handleReport()}
+                    disabled={!reportReason.trim()}
+                    className="px-3 py-1.5 bg-red-500 text-white rounded-ventsafe-sm text-xs font-medium disabled:opacity-40"
                   >
                     Submit
                   </button>
@@ -580,7 +611,8 @@ function ResourceCard({
 // ─── Main ResourcesClient ─────────────────────────────────────────────────────
 
 export default function ResourcesClient() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+
   const [resources, setResources] = useState<ResourceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -589,11 +621,6 @@ export default function ResourcesClient() {
   const [hasMore, setHasMore] = useState(true);
   const [writeModalOpen, setWriteModalOpen] = useState(false);
   const [editResource, setEditResource] = useState<ResourceData | null>(null);
-
-  const token =
-    (typeof window !== "undefined"
-      ? localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
-      : null) ?? "";
 
   const viewerUserId = user?.id ?? "";
   const viewerRole = user?.role ?? "student";
@@ -607,18 +634,24 @@ export default function ResourcesClient() {
         const params = new URLSearchParams({
           page: String(pageNum),
           limit: "20",
-          ...(category && { category }),
-          ...(search && { search }),
+          ...(category ? { category } : {}),
+          ...(search ? { search } : {}),
         });
         const res = await fetch(`${API_BASE_URL}/resources?${params}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json();
+        const data = (await res.json()) as ApiResponse<{
+          resources: ResourceData[];
+          hasMore: boolean;
+        }>;
         if (data.success) {
-          const newRes: ResourceData[] = data.data.resources;
-          setResources((prev) => (replace ? newRes : [...prev, ...newRes]));
+          setResources((prev) =>
+            replace ? data.data.resources : [...prev, ...data.data.resources],
+          );
           setHasMore(data.data.hasMore);
         }
+      } catch {
+        // Network error — keep showing existing state
       } finally {
         setLoading(false);
       }
@@ -628,7 +661,7 @@ export default function ResourcesClient() {
 
   useEffect(() => {
     setPage(1);
-    fetchResources(1, true);
+    void fetchResources(1, true);
   }, [category, search, fetchResources]);
 
   const handleSaved = (resource: ResourceData) => {
@@ -672,7 +705,6 @@ export default function ResourcesClient() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Search */}
               <div className="relative">
                 <Search
                   size={14}
@@ -685,7 +717,6 @@ export default function ResourcesClient() {
                   className="pl-9 pr-3 py-2 border border-ventsafe-border rounded-ventsafe-sm text-sm focus:outline-none focus:border-ventsafe-navy w-52"
                 />
               </div>
-              {/* Write button — counsellors only */}
               {isCounsellor && (
                 <button
                   onClick={() => {
@@ -706,11 +737,10 @@ export default function ResourcesClient() {
               <button
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-ventsafe-full text-xs font-medium border transition-all ${
-                  category === cat.value
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-ventsafe-full text-xs font-medium border transition-all ${category === cat.value
                     ? "bg-ventsafe-foreground text-ventsafe-primary-foreground border-ventsafe-foreground"
                     : "bg-white border-ventsafe-border text-ventsafe-foreground/70 hover:border-ventsafe-navy"
-                }`}
+                  }`}
               >
                 <span>{cat.icon}</span>
                 {cat.label}
@@ -778,7 +808,7 @@ export default function ResourcesClient() {
                 onClick={() => {
                   const next = page + 1;
                   setPage(next);
-                  fetchResources(next);
+                  void fetchResources(next);
                 }}
                 className="w-full py-3 text-sm text-ventsafe-foreground/60 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors"
               >

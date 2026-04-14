@@ -15,32 +15,15 @@ import {
   MessageCircle,
   ShieldCheck,
   GraduationCap,
+  ArrowLeftRight,
+  UserPlus,
 } from "lucide-react";
+import { toast } from "sonner";
+import { checkAccountExists, checkAssociatedAccount, logout } from "@/lib/auth";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Logo } from "@/components/shared/Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/shared/LogoutModal";
-import { STORAGE_KEYS } from "@/config/constants";
-
-// ─── Role Badge ───────────────────────────────────────────────────────────────
-
-function RoleBadge({ role }: { role: string }) {
-  if (role === "counselor") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ventsafe-navy text-white border border-ventsafe-navy">
-        <ShieldCheck size={10} />
-        Counsellor
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ventsafe-muted text-ventsafe-navy border border-ventsafe-border">
-      <GraduationCap size={10} />
-      Student
-    </span>
-  );
-}
-
-// ─── Nav Links ────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
   { href: "/vent-space", label: "Home", icon: <Home size={16} /> },
@@ -48,28 +31,263 @@ const NAV_LINKS = [
   { href: "/vent", label: "Vent", icon: <MessageCircle size={16} /> },
 ];
 
-// ─── Main Layout ──────────────────────────────────────────────────────────────
+// ─── Role Badge ───────────────────────────────────────────────────────────────
 
-interface AppLayoutProps {
-  children: React.ReactNode;
+function RoleBadge({
+  role,
+  onSwitchRole,
+}: {
+  role: string;
+  onSwitchRole: () => void;
+}) {
+  if (role === "counselor") {
+    return (
+      <button
+        onClick={onSwitchRole}
+        title="Switch account"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ventsafe-navy text-white border border-ventsafe-navy hover:opacity-80 transition-opacity cursor-pointer"
+      >
+        <ShieldCheck size={10} />
+        Counsellor
+      </button>
+    );
+  }
+  if (role === "counsellor_pending") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
+        <ShieldCheck size={10} />
+        Pending
+      </span>
+    );
+  }
+  return (
+    <button
+      onClick={onSwitchRole}
+      title="Switch account or sign up as counsellor"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-ventsafe-muted text-ventsafe-navy border border-ventsafe-border hover:border-ventsafe-navy transition-colors cursor-pointer"
+    >
+      <GraduationCap size={10} />
+      Student
+    </button>
+  );
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+// ─── Role Switch Modal ────────────────────────────────────────────────────────
+
+function RoleSwitchModal({
+  isOpen,
+  currentRole,
+  hasSeparateCounsellorAccount,
+  hasSeparateStudentAccount,
+  onClose,
+}: {
+  isOpen: boolean;
+  currentRole: string;
+  // true = they already have a counsellor account on this device → show "Log in"
+  // false = no counsellor account found → show "Sign up"
+  hasSeparateCounsellorAccount: boolean;
+  // true = they already have a student account on this device → show "Log in"
+  // false = no student account found → show "Sign up"
+  hasSeparateStudentAccount: boolean;
+  onClose: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="relative w-full max-w-sm bg-white rounded-ventsafe-md shadow-2xl z-10 overflow-hidden"
+      >
+        <div className="px-6 py-5 border-b border-ventsafe-border/30">
+          <h2 className="text-base font-bold text-ventsafe-foreground">
+            Switch Account
+          </h2>
+          <p className="text-xs text-ventsafe-foreground/50 mt-0.5">
+            Currently signed in as a{" "}
+            <span className="font-semibold">
+              {currentRole === "counselor" ? "Counsellor" : "Student"}
+            </span>
+            .
+          </p>
+        </div>
+
+        <div className="px-6 py-4 space-y-3">
+          {/* ── Student is signed in → offer counsellor account ── */}
+          {currentRole === "student" && (
+            <>
+              {hasSeparateCounsellorAccount ? (
+                // They have counsellor keys → log in to their existing counsellor account
+                <Link
+                  href="/login/counsellor"
+                  onClick={onClose}
+                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-full bg-ventsafe-navy text-white flex items-center justify-center shrink-0">
+                    <ShieldCheck size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ventsafe-foreground">
+                      Log in as Counsellor
+                    </p>
+                    <p className="text-xs text-ventsafe-foreground/50">
+                      Switch to your existing counsellor account
+                    </p>
+                  </div>
+                  <ArrowLeftRight
+                    size={14}
+                    className="ml-auto text-ventsafe-foreground/30 group-hover:text-ventsafe-navy"
+                  />
+                </Link>
+              ) : (
+                // No counsellor account found → prompt to create one
+                <Link
+                  href="/signup/counsellor"
+                  onClick={onClose}
+                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-full bg-ventsafe-muted text-ventsafe-navy flex items-center justify-center shrink-0">
+                    <UserPlus size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ventsafe-foreground">
+                      Sign up as Counsellor
+                    </p>
+                    <p className="text-xs text-ventsafe-foreground/50">
+                      Create a new counsellor account to support students
+                    </p>
+                  </div>
+                  <ArrowLeftRight
+                    size={14}
+                    className="ml-auto text-ventsafe-foreground/30 group-hover:text-ventsafe-navy"
+                  />
+                </Link>
+              )}
+            </>
+          )}
+
+          {/* ── Counsellor is signed in → offer student account ── */}
+          {currentRole === "counselor" && (
+            <>
+              {hasSeparateStudentAccount ? (
+                // They have separate student keys → log in to their student account
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-full bg-ventsafe-muted text-ventsafe-navy flex items-center justify-center shrink-0">
+                    <GraduationCap size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ventsafe-foreground">
+                      Log in as Student
+                    </p>
+                    <p className="text-xs text-ventsafe-foreground/50">
+                      Switch to your existing student account
+                    </p>
+                  </div>
+                  <ArrowLeftRight
+                    size={14}
+                    className="ml-auto text-ventsafe-foreground/30 group-hover:text-ventsafe-navy"
+                  />
+                </Link>
+              ) : (
+                // No separate student account found → prompt to create one
+                <Link
+                  href="/signup"
+                  onClick={onClose}
+                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-full bg-ventsafe-muted text-ventsafe-navy flex items-center justify-center shrink-0">
+                    <UserPlus size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-ventsafe-foreground">
+                      Sign up as Student
+                    </p>
+                    <p className="text-xs text-ventsafe-foreground/50">
+                      Create a new anonymous student account
+                    </p>
+                  </div>
+                  <ArrowLeftRight
+                    size={14}
+                    className="ml-auto text-ventsafe-foreground/30 group-hover:text-ventsafe-navy"
+                  />
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="px-6 py-3 border-t border-ventsafe-border/30">
+          <button
+            onClick={onClose}
+            className="w-full py-2 text-sm text-ventsafe-foreground/60 hover:text-ventsafe-foreground transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export { RoleSwitchModal };
+
+// ─── Main Layout ──────────────────────────────────────────────────────────────
+
+export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, isInitialized, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const anonymousName =
-    user?.anonymousName ||
-    (typeof window !== "undefined"
-      ? localStorage.getItem(STORAGE_KEYS.ANONYMOUS_ID) ?? "Anonymous"
-      : "Anonymous");
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  const firstLetter = anonymousName.charAt(0).toUpperCase();
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (mounted && isInitialized && !isAuthenticated) {
+      // Check if we are on a protected route
+      const publicRoutes = ["/", "/login", "/signup", "/about", "/contact", "/terms", "/welcome", "/privacy-policy"];
+      const isPublic = publicRoutes.some(route => pathname === route || pathname.startsWith("/login/") || pathname.startsWith("/signup/"));
+
+      if (!isPublic) {
+        // Fallback or hint for redirection: check if a counsellor key exists in localStorage
+        const counsellorKey = typeof window !== "undefined"
+          ? (localStorage.getItem("ventsafe-counsellor-public-key") || localStorage.getItem("ventsafe-counsellor-signup-public-key"))
+          : null;
+
+        const target = counsellorKey ? "/login/counsellor" : "/login";
+        router.push(target);
+      }
+    }
+  }, [mounted, isInitialized, isAuthenticated, pathname, router]);
+
+  const anonymousName = mounted
+    ? (user?.anonymousName ??
+      localStorage.getItem("ventsafe-anon-name") ??
+      localStorage.getItem("ventsafe-counsellor-anon-name") ??
+      "Anonymous")
+    : (user?.anonymousName ?? "Anonymous");
+
+  // const firstLetter = (anonymousName || "A").charAt(0).toUpperCase();
+  // Always read role from Zustand store (user object) — never from localStorage
   const userRole = user?.role ?? "student";
+  const isCounsellor = userRole === "counselor";
+
+  // Account existence results — populated by the real DB check in handleSwitchRoleClick
+  const [hasSeparateCounsellorAccount, setHasSeparateCounsellorAccount] = useState(false);
+  const [hasSeparateStudentAccount, setHasSeparateStudentAccount] = useState(false);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -84,55 +302,129 @@ export function AppLayout({ children }: AppLayoutProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // ── Point 5 fix: counsellors log out to /login/counsellor ────────────────
+  const handleLogout = async () => {
+    setDropdownOpen(false);
+    setShowLogoutModal(false);
+
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const SKIP = ["/login", "/login/counsellor", "/signup", "/welcome", "/"];
+      if (!SKIP.some((p) => currentPath.startsWith(p))) {
+        localStorage.setItem("ventsafe-redirect-after-login", currentPath);
+      }
+    }
+
+    try {
+      await logout();
+    } catch {
+      // proceed anyway
+    }
+
+    // Route to the correct login page based on role
+    window.location.href = isCounsellor ? "/login/counsellor" : "/login";
+  };
+
+  const handleSwitchRoleClick = async () => {
+    setDropdownOpen(false);
+    const tId = toast.loading("Checking accounts...");
+
+    try {
+      // Read whatever public keys are stored locally for each role
+      const counsellorPublicKey =
+        typeof window !== "undefined"
+          ? localStorage.getItem("ventsafe-counsellor-public-key") ??
+          localStorage.getItem("ventsafe-counsellor-signup-public-key")
+          : null;
+      const studentPublicKey =
+        typeof window !== "undefined"
+          ? localStorage.getItem("ventsafe-signup-public-key") ??
+          localStorage.getItem("ventsafe-public-key")
+          : null;
+
+      // Ask the backend whether those keys actually exist in the DB
+      // ALSO: Check the DB for ANY account with the same name (requested DB-first check)
+      const targetRole = userRole === "student" ? "counselor" : "student";
+
+      const [counsellorResult, studentResult, associatedResult] = await Promise.all([
+        counsellorPublicKey ? checkAccountExists(counsellorPublicKey) : null,
+        studentPublicKey ? checkAccountExists(studentPublicKey) : null,
+        checkAssociatedAccount(anonymousName, targetRole),
+      ]);
+
+      // A separate account exists if the key is in DB OR if an associated account by name was found
+      if (userRole === "student") {
+        setHasSeparateCounsellorAccount(
+          !!counsellorResult?.exists || !!associatedResult?.exists
+        );
+        setHasSeparateStudentAccount(false);
+      } else {
+        setHasSeparateStudentAccount(
+          !!studentResult?.exists || !!associatedResult?.exists
+        );
+        setHasSeparateCounsellorAccount(false);
+      }
+    } catch {
+      // Network error — fall back to false (will show Sign up options)
+      setHasSeparateCounsellorAccount(false);
+      setHasSeparateStudentAccount(false);
+    }
+
+    toast.dismiss(tId);
+    setShowRoleModal(true);
+  };
+
   const DROPDOWN_ITEMS: {
     icon: React.ReactNode;
     label: string;
     href?: string;
     onClick?: () => void;
   }[] = [
-    {
-      icon: <RefreshCw size={15} />,
-      label: "Change anonymous name",
-      onClick: () => {
-        setDropdownOpen(false);
-        setShowLogoutModal(true);
+      {
+        icon: <RefreshCw size={15} />,
+        label: "Change anon name",
+        onClick: () => {
+          setDropdownOpen(false);
+          setShowLogoutModal(true);
+        },
       },
-    },
-    {
-      icon: <BookMarked size={15} />,
-      label: "My vents",
-      href: "/my-vents",
-    },
-    {
-      icon: <Settings size={15} />,
-      label: "Settings",
-      href: "/settings",
-    },
-  ];
+      {
+        icon: <ArrowLeftRight size={15} />,
+        label: "Switch account",
+        onClick: handleSwitchRoleClick,
+      },
+      {
+        icon: <BookMarked size={15} />,
+        label: "My vents",
+        href: "/my-vents",
+      },
+      {
+        icon: <Settings size={15} />,
+        label: "Settings",
+        href: "/settings",
+      },
+    ];
 
   return (
     <>
-      {/* ── Fixed Header ── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-ventsafe-background/90 backdrop-blur-md border-b border-ventsafe-border/30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-          {/* Logo */}
           <Logo />
 
-          {/* Nav */}
+          {/* Fix 3: correct active check — avoids /vent-space matching /vent */}
           <nav className="hidden sm:flex items-center gap-6">
             {NAV_LINKS.map((link) => {
               const isActive =
                 pathname === link.href ||
-                (link.href !== "/vent-space" && pathname.startsWith(link.href));
+                pathname.startsWith(link.href + "/");
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 text-sm font-medium relative transition-colors ${
-                    isActive
-                      ? "text-ventsafe-navy"
-                      : "text-ventsafe-foreground/60 hover:text-ventsafe-navy"
-                  }`}
+                  className={`flex items-center gap-1.5 text-sm font-medium relative transition-colors ${isActive
+                    ? "text-ventsafe-navy"
+                    : "text-ventsafe-foreground/60 hover:text-ventsafe-navy"
+                    }`}
                 >
                   {link.icon}
                   {link.label}
@@ -144,21 +436,20 @@ export function AppLayout({ children }: AppLayoutProps) {
             })}
           </nav>
 
-          {/* Right: role badge + user dropdown */}
           <div className="flex items-center gap-2">
-            {/* Role badge — always visible */}
-            <RoleBadge role={userRole} />
+            {/* Badge reads from Zustand user.role — always correct */}
+            <RoleBadge
+              role={userRole}
+              onSwitchRole={handleSwitchRoleClick}
+            />
 
-            {/* User dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((o) => !o)}
-                className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-ventsafe-full border border-ventsafe-border bg-white hover:border-ventsafe-navy transition-colors"
+                className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-ventsafe-full border border-ventsafe-border bg-white hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
               >
-                <div className="w-7 h-7 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
-                  {firstLetter}
-                </div>
-                <span className="text-sm font-medium text-ventsafe-foreground hidden md:inline max-w-[100px] truncate">
+                <UserAvatar name={anonymousName} role={userRole} className="w-8 h-8 text-xs" />
+                <span className="text-sm font-semibold text-ventsafe-foreground hidden md:inline max-w-[120px] truncate">
                   {anonymousName}
                 </span>
                 <motion.div
@@ -181,22 +472,22 @@ export function AppLayout({ children }: AppLayoutProps) {
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 top-full mt-2 w-56 bg-white border border-ventsafe-border rounded-ventsafe-md shadow-lg overflow-hidden z-50"
                   >
-                    {/* User header */}
-                    <div className="flex items-center gap-3 px-4 py-3 border-b border-ventsafe-border/50 bg-ventsafe-muted/50">
-                      <div className="w-8 h-8 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-                        {firstLetter}
-                      </div>
+                    <div className="flex items-center gap-3 px-4 py-3 border-b border-ventsafe-border/50 bg-ventsafe-muted/30">
+                      <UserAvatar name={anonymousName} role={userRole} className="w-10 h-10 text-sm" />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-ventsafe-foreground truncate">
                           {anonymousName}
                         </p>
+                        {/* Badge in dropdown also reads from Zustand */}
                         <div className="mt-0.5">
-                          <RoleBadge role={userRole} />
+                          <RoleBadge
+                            role={userRole}
+                            onSwitchRole={handleSwitchRoleClick}
+                          />
                         </div>
                       </div>
                     </div>
 
-                    {/* Items */}
                     <div className="py-1">
                       {DROPDOWN_ITEMS.map((item) =>
                         item.href ? (
@@ -226,13 +517,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                       )}
                     </div>
 
-                    {/* Logout */}
                     <div className="border-t border-ventsafe-border/50 py-1">
                       <button
-                        onClick={() => {
-                          setDropdownOpen(false);
-                          setShowLogoutModal(true);
-                        }}
+                        onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                       >
                         <LogOut size={15} />
@@ -247,18 +534,28 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </header>
 
-      {/* ── Page Content ── */}
       <div className="pt-16">{children}</div>
 
-      {/* ── Logout / Name Change Modal ── */}
       <LogoutModal
         isOpen={showLogoutModal}
         currentName={anonymousName}
-        gender={user?.gender ?? "male"} // use actual gender from user object
+        gender={user?.gender ?? "male"}
         mode="logout"
-        onConfirm={logout} // fires on "Save & Logout" or "No, just log out"
+        onConfirm={handleLogout}
         onCancel={() => setShowLogoutModal(false)}
       />
+
+      <AnimatePresence>
+        {showRoleModal && (
+          <RoleSwitchModal
+            isOpen={showRoleModal}
+            currentRole={userRole}
+            hasSeparateCounsellorAccount={hasSeparateCounsellorAccount}
+            hasSeparateStudentAccount={hasSeparateStudentAccount}
+            onClose={() => setShowRoleModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

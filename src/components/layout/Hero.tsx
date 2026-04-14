@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { GraduationCap, Stethoscope, ChevronDown } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const ventOptions = [
   {
@@ -26,9 +27,15 @@ const ventOptions = [
 ];
 
 export function Hero() {
+  const { isAuthenticated, user } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -157,12 +164,15 @@ export function Hero() {
                 </AnimatePresence>
               </div>
 
-              {/* Vent As Guest */}
+              {/* Secondary CTA */}
               <button
-                onClick={() => router.push("/vent-space")}
+                onClick={() => {
+                  const target = user?.role === "admin" ? "/admin" : "/vent-space";
+                  router.push(target);
+                }}
                 className="border border-ventsafe-foreground text-ventsafe-foreground px-4 py-1.5 rounded-ventsafe-tiny font-medium hover:bg-ventsafe-foreground hover:text-ventsafe-primary-foreground transition-colors text-ventsafe-btn-sm w-full sm:w-auto cursor-pointer"
               >
-                Vent As Guest
+                {mounted && isAuthenticated ? "Continue to Platform" : "Vent As Guest"}
               </button>
             </div>
           </div>

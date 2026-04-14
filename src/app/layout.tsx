@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Montserrat } from "next/font/google";
+import { Toaster } from "sonner";
 
 // Configure the Montserrat font with variable option
 const montserrat = Montserrat({
@@ -24,9 +25,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={montserrat.variable}>
-      <body className="font-ventsafe-font">
+      <body className="font-ventsafe-font" suppressHydrationWarning>
         {/* AuthProvider runs checkAuth() once on every page load */}
         <AuthProvider>{children}</AuthProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

@@ -13,8 +13,9 @@ import {
 import { Logo } from "@/components/shared/Logo";
 import { Footer } from "@/components/shared/Footer";
 import Link from "next/link";
-import { signup } from "@/lib/auth";
+import { signup, checkAccountExists } from "@/lib/auth";
 import { encryptPrivateKey } from "@/lib/blockchain/keys";
+import { useRouter } from "next/navigation";
 import { STORAGE_KEYS, API_BASE_URL } from "@/config/constants";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -33,11 +34,13 @@ const DOWNLOAD_FORMATS = [
 type Step = "form" | "keys" | "pin";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>("form");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isSavingPin, setIsSavingPin] = useState(false);
   const [isPinComplete, setIsPinComplete] = useState(false);
+  const [existsInDb, setExistsInDb] = useState(false);
 
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
@@ -101,6 +104,11 @@ export default function SignupPage() {
       setAnonymousName(savedName || "");
       if (savedGender) setGender(savedGender);
       setStep(alreadyPinned ? "form" : "keys");
+
+      // Verify if this key actually belongs to a DB user
+      checkAccountExists(savedPublicKey).then((res) => {
+        if (res?.exists) setExistsInDb(true);
+      });
     }
   }, []);
 
@@ -291,10 +299,7 @@ export default function SignupPage() {
               >
                 <div className="text-center mb-8">
                   <h1 className="text-ventsafe-sub-heading font-bold text-ventsafe-black mb-3">
-                    Create Your{" "}
-                    <span className="text-ventsafe-foreground">
-                      Anonymous Key
-                    </span>
+                    {existsInDb ? "Welcome back" : <span>Create Your <span className="text-ventsafe-foreground">Anonymous Key</span></span>}
                   </h1>
                   <p className="text-sm text-ventsafe-black mb-1">
                     Generate a{" "}
@@ -361,11 +366,17 @@ export default function SignupPage() {
 
                 <div className="flex justify-center">
                   <button
-                    onClick={() => handleGenerateKeyPair(false)}
+                    onClick={() => {
+                      if (existsInDb) {
+                        router.push("/login");
+                      } else {
+                        handleGenerateKeyPair(false);
+                      }
+                    }}
                     disabled={isGenerating}
                     className="bg-ventsafe-foreground text-white px-10 py-2.5 rounded-full font-medium hover:opacity-90 transition-opacity text-ventsafe-st disabled:opacity-70 cursor-pointer"
                   >
-                    {isGenerating ? "Generating..." : "Generate Key Pair"}
+                    {isGenerating ? "Generating..." : (existsInDb ? "Log in to my Account" : "Generate Key Pair")}
                   </button>
                 </div>
               </motion.div>

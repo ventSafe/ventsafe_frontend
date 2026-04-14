@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ThumbsUp,
-  ThumbsDown,
   MessageCircle,
   Repeat2,
   Send,
@@ -13,9 +12,14 @@ import {
   Trash2,
   ShieldCheck,
   X,
+  GraduationCap,
+  Edit3,
+  User,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { API_BASE_URL } from "@/config/constants";
+import { getInitials } from "@/lib/utils";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,8 +32,8 @@ export interface PostViewData {
   ai_risk_level: string;
   ai_mood: string | null;
   comments_count: number;
-  likes_count: number; // total likes on this post
-  dislikes_count: number; // total dislikes on this post
+  likes_count: number;
+  dislikes_count: number;
   reposts_count: number;
   is_flagged: boolean;
   created_at: string;
@@ -37,16 +41,20 @@ export interface PostViewData {
   author_name: string;
   author_role: "student" | "counselor";
   author_tier: "volunteer" | "professional" | null;
-  viewer_has_liked: boolean; // has the viewing user liked this post?
-  viewer_has_disliked: boolean; // has the viewing user disliked this post?
+  viewer_has_liked: boolean;
+  viewer_has_disliked: boolean;
   viewer_has_reposted: boolean;
   reposted_by_name?: string;
   reposted_by_id?: string;
   reposted_at?: string;
+  original_author_id?: string;
+  original_author_name?: string;
 }
 
-interface CommentData {
+export interface CommentData {
   id: string;
+  post_id: string;
+  parent_id?: string;
   content: string;
   likes_count: number;
   created_at: string;
@@ -63,6 +71,37 @@ interface PostCardProps {
   viewerRole: string;
   token: string;
   onDelete?: (id: string) => void;
+  onRepost?: (post: PostViewData) => void;
+  viewerName?: string;
+}
+
+// ─── API response types ───────────────────────────────────────────────────────
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: string;
+}
+
+interface LikeResult {
+  liked: boolean;
+  likes_count: number;
+}
+
+interface RepostResult {
+  reposted: boolean;
+  reposts_count: number;
+}
+
+interface CommentsResult {
+  comments: CommentData[];
+  total: number;
+}
+
+interface CommentLikeResult {
+  liked: boolean;
+  likes_count: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -78,9 +117,42 @@ const CATEGORY_LABELS: Record<string, string> = {
   loneliness: "Loneliness",
 };
 
-// ─── Author badge (Certified / Volunteer) ────────────────────────────────────
-// Shown next to the author's name on every post card.
-// Students have no badge. Counsellors show tier badge.
+// ─── Permission helpers ───────────────────────────────────────────────────────
+// All rules from the flow diagram:
+//
+// STUDENT:
+//   Can comment on: own post, counsellor posts
+//   Cannot comment on: other student posts
+//
+// COUNSELLOR:
+//   Can comment on: own post, student posts
+//   Cannot comment on: other counsellor posts
+//
+// Both: like/unlike (toggle), repost, report any post
+
+function canComment(
+  viewerRole: string,
+  viewerUserId: string,
+  authorId: string,
+  authorRole: "student" | "counselor",
+): boolean {
+  // Always can reply to own post
+  if (viewerUserId === authorId) return true;
+
+  if (viewerRole === "student") {
+    // Students can ONLY comment on counsellor posts
+    return authorRole === "counselor";
+  }
+
+  if (viewerRole === "counselor") {
+    // Counsellors can ONLY comment on student posts (not other counsellors)
+    return authorRole === "student";
+  }
+
+  return false;
+}
+
+// ─── Author badge ─────────────────────────────────────────────────────────────
 
 function AuthorBadge({
   role,
@@ -89,18 +161,32 @@ function AuthorBadge({
   role: "student" | "counselor";
   tier: "volunteer" | "professional" | null;
 }) {
-  if (role !== "counselor") return null;
+  if (role === "counselor") {
+    return (
+      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-ventsafe-navy text-white ml-1 shrink-0">
+        <ShieldCheck size={9} />
+        {tier === "professional" ? "Certified" : "Volunteer"}
+      </span>
+    );
+  }
+  // Students get a subtle badge too so counsellors know who they're reading
   return (
-    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-ventsafe-navy text-white ml-1 shrink-0">
-      <ShieldCheck size={9} />
-      {tier === "professional" ? "Certified" : "Volunteer"}
+    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-ventsafe-muted text-ventsafe-foreground/60 ml-1 shrink-0">
+      <GraduationCap size={9} />
+      Student
     </span>
   );
 }
 
+
+
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
-async function apiPost(url: string, token: string, body?: object) {
+async function apiPost<T>(
+  url: string,
+  token: string,
+  body?: object,
+): Promise<ApiResponse<T>> {
   const res = await fetch(`${API_BASE_URL}${url}`, {
     method: "POST",
     headers: {
@@ -109,29 +195,25 @@ async function apiPost(url: string, token: string, body?: object) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  return res.json() as Promise<{
-    success: boolean;
-    data: Record<string, unknown>;
-    error?: string;
-  }>;
+  return res.json() as Promise<ApiResponse<T>>;
 }
 
-async function apiGet(url: string, token: string) {
+async function apiGet<T>(url: string, token: string): Promise<ApiResponse<T>> {
   const res = await fetch(`${API_BASE_URL}${url}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.json() as Promise<{
-    success: boolean;
-    data: Record<string, unknown>;
-  }>;
+  return res.json() as Promise<ApiResponse<T>>;
 }
 
-async function apiDelete(url: string, token: string) {
+async function apiDelete(
+  url: string,
+  token: string,
+): Promise<ApiResponse<null>> {
   const res = await fetch(`${API_BASE_URL}${url}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
-  return res.json() as Promise<{ success: boolean }>;
+  return res.json() as Promise<ApiResponse<null>>;
 }
 
 // ─── Comment Item ─────────────────────────────────────────────────────────────
@@ -139,55 +221,158 @@ async function apiDelete(url: string, token: string) {
 function CommentItem({
   comment,
   token,
+  viewerUserId,
+  onDeleted,
+  onReply,
 }: {
   comment: CommentData;
   token: string;
+  viewerUserId: string;
+  onDeleted: (commentId: string) => void;
+  onReply: (commentId: string, authorName: string) => void;
 }) {
   const [liked, setLiked] = useState(comment.viewer_has_liked);
   const [likeCount, setLikeCount] = useState(comment.likes_count);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const isOwn = comment.author_id === viewerUserId;
 
   const handleLike = async () => {
-    const res = await apiPost(`/posts/x/comments/${comment.id}/like`, token);
+    const res = await apiPost<CommentLikeResult>(
+      `/posts/x/comments/${comment.id}/like`,
+      token,
+    );
     if (res.success) {
-      const d = res.data as { liked: boolean; likes_count: number };
-      setLiked(d.liked);
-      setLikeCount(d.likes_count);
+      setLiked(res.data.liked);
+      setLikeCount(res.data.likes_count);
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editContent.trim()) return;
+    setSubmitting(true);
+    const res = await fetch(`${API_BASE_URL}/posts/${comment.post_id}/comments/${comment.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content: editContent.trim() }),
+    }).then(r => r.json());
+    
+    if (res.success) {
+      comment.content = editContent.trim();
+      setIsEditing(false);
+    }
+    setSubmitting(false);
+  };
+
+  const handleDelete = async () => {
+    const res = await apiDelete(`/posts/${comment.post_id}/comments/${comment.id}`, token);
+    if (res.success) {
+      onDeleted(comment.id);
     }
   };
 
   return (
-    <div className="flex gap-2.5 py-2.5 border-b border-ventsafe-border/30 last:border-0">
-      <div className="w-7 h-7 rounded-full bg-ventsafe-muted text-ventsafe-foreground flex items-center justify-center text-xs font-bold shrink-0">
-        {comment.author_name.charAt(0)}
-      </div>
+    <div className="flex gap-2.5 py-2.5 border-b border-ventsafe-border/30 last:border-0 relative group">
+      <UserAvatar name={comment.author_name} role={comment.author_role} className="w-7 h-7 text-xs" />
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-xs font-semibold text-ventsafe-foreground">
-            {comment.author_name}
-          </span>
-          <AuthorBadge role={comment.author_role} tier={comment.author_tier} />
-          <span className="text-[10px] text-ventsafe-foreground/40">
-            {formatDistanceToNow(new Date(comment.created_at), {
-              addSuffix: true,
-            })}
-          </span>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-1 flex-wrap mb-0.5">
+            <span className="text-xs font-semibold text-ventsafe-foreground">
+              {comment.author_name}
+            </span>
+            <AuthorBadge role={comment.author_role} tier={comment.author_tier} />
+            <span className="text-[10px] text-ventsafe-foreground/40">
+              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+            </span>
+          </div>
+
+          {/* Comment 3-dot menu */}
+          <div className="relative opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => setMenuOpen(!menuOpen)} className="p-0.5 text-ventsafe-foreground/40 hover:text-ventsafe-foreground rounded">
+              <MoreHorizontal size={13} />
+            </button>
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="absolute right-0 top-full mt-1 w-32 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
+                >
+                  {isOwn && (
+                    <>
+                      <button onClick={() => { setIsEditing(true); setMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-ventsafe-foreground hover:bg-ventsafe-muted">
+                        <Edit3 size={12} /> Edit
+                      </button>
+                      <button onClick={() => { void handleDelete(); setMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50">
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-        <p className="text-xs text-ventsafe-foreground/80 mt-0.5 leading-relaxed">
-          {comment.content}
-        </p>
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-1 mt-1 text-[10px] font-medium transition-colors ${
-            liked
+
+        {isEditing ? (
+          <div className="mt-1 flex flex-col gap-1.5">
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-2 py-1.5 text-xs focus:outline-none focus:border-ventsafe-navy resize-none min-h-[50px]"
+            />
+            <div className="flex justify-end gap-1.5">
+              <button disabled={submitting} onClick={() => setIsEditing(false)} className="px-2 py-1 text-[10px] border border-ventsafe-border rounded transition-colors">Cancel</button>
+              <button disabled={submitting || !editContent.trim()} onClick={() => void handleEdit()} className="px-2 py-1 bg-ventsafe-navy text-white rounded text-[10px] disabled:opacity-50 transition-colors">{submitting ? "Saving..." : "Save"}</button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-ventsafe-foreground/80 leading-relaxed whitespace-pre-wrap">
+            {comment.content}
+          </p>
+        )}
+
+        <div className="flex items-center gap-3 mt-1.5">
+          <button
+            onClick={() => void handleLike()}
+            className={`flex items-center gap-1 text-[10px] font-medium transition-colors ${liked
               ? "text-ventsafe-navy"
               : "text-ventsafe-foreground/40 hover:text-ventsafe-navy"
-          }`}
-        >
-          <ThumbsUp size={10} className={liked ? "fill-ventsafe-navy" : ""} />
-          {likeCount > 0 && likeCount}
-        </button>
+              }`}
+          >
+            <ThumbsUp size={10} className={liked ? "fill-ventsafe-navy" : ""} />
+            {likeCount > 0 && likeCount}
+          </button>
+          
+          <button 
+            onClick={() => onReply(comment.id, comment.author_name)}
+            className="text-[10px] font-medium text-ventsafe-foreground/40 hover:text-ventsafe-navy transition-colors"
+          >
+            Reply
+          </button>
+        </div>
       </div>
     </div>
+  );
+}
+
+// ─── Post type badge ──────────────────────────────────────────────────────────
+// Counsellor posts show "Motivation" badge — they're sharing encouragement/tips.
+// Student posts show nothing — they're venting.
+
+function PostTypeBadge({ authorRole }: { authorRole: "student" | "counselor" }) {
+  if (authorRole !== "counselor") return null;
+  return (
+    <span className="text-[11px] font-semibold text-ventsafe-navy border border-ventsafe-navy rounded-full px-2 py-0.5">
+      Motivation
+    </span>
   );
 }
 
@@ -199,8 +384,10 @@ export function PostCard({
   viewerRole,
   token,
   onDelete,
+  onRepost,
+  viewerName,
 }: PostCardProps) {
-  const [post, setPost] = useState(initialPost);
+  const [post, setPost] = useState<PostViewData>(initialPost);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<CommentData[]>([]);
   const [commentText, setCommentText] = useState("");
@@ -210,96 +397,134 @@ export function PostCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [showReportInput, setShowReportInput] = useState(false);
-  const [reactingPost, setReactingPost] = useState(false);
+  const [reactingLike, setReactingLike] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(initialPost.content);
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
+
+  const [likers, setLikers] = useState<any[]>([]);
+  const [showLikers, setShowLikers] = useState(false);
+  const [reposters, setReposters] = useState<any[]>([]);
+  const [showReposters, setShowReposters] = useState(false);
 
   const isOwn = post.author_id === viewerUserId;
   const isLong = post.content.length > 300;
   const displayContent =
     isLong && !expanded ? post.content.slice(0, 300) + "..." : post.content;
 
-  // Students can only comment on counsellor posts (not other student posts)
-  // or on their own posts.
-  const canComment =
-    isOwn || viewerRole === "counselor" || post.author_role === "counselor";
+  // Permission check using the helper above
+  const showCommentButton = canComment(
+    viewerRole,
+    viewerUserId,
+    post.author_id,
+    post.author_role,
+  );
 
-  // ── React to post (like / dislike / toggle off) ────────────────────────────
+  // ── Like / Unlike (toggle — no separate dislike per flow diagram) ─────────
 
-  const handleReact = async (reaction: "like" | "dislike") => {
-    if (reactingPost) return;
-    setReactingPost(true);
+  const handleLike = async () => {
+    if (reactingLike) return;
+    setReactingLike(true);
 
-    // Optimistic update before API call
-    const prev = {
-      viewer_has_liked: post.viewer_has_liked,
-      viewer_has_disliked: post.viewer_has_disliked,
-      likes_count: post.likes_count,
-      dislikes_count: post.dislikes_count,
-    };
+    const wasLiked = post.viewer_has_liked;
 
-    setPost((p) => {
-      const toggling =
-        reaction === "like" ? p.viewer_has_liked : p.viewer_has_disliked;
-      if (reaction === "like") {
-        return {
-          ...p,
-          viewer_has_liked: !p.viewer_has_liked,
-          viewer_has_disliked: false,
-          likes_count: p.viewer_has_liked
-            ? p.likes_count - 1
-            : p.likes_count + 1,
-          dislikes_count: p.viewer_has_disliked
-            ? p.dislikes_count - 1
-            : p.dislikes_count,
-        };
-      } else {
-        return {
-          ...p,
-          viewer_has_disliked: !p.viewer_has_disliked,
-          viewer_has_liked: false,
-          dislikes_count: p.viewer_has_disliked
-            ? p.dislikes_count - 1
-            : p.dislikes_count + 1,
-          likes_count: p.viewer_has_liked ? p.likes_count - 1 : p.likes_count,
-        };
-      }
+    // Optimistic update
+    setPost((p) => ({
+      ...p,
+      viewer_has_liked: !p.viewer_has_liked,
+      likes_count: p.viewer_has_liked
+        ? p.likes_count - 1
+        : p.likes_count + 1,
+    }));
+
+    // Per flow diagram: like/unlike = same endpoint with 'like' reaction
+    // Backend toggles: if already liked → unlike
+    const res = await apiPost<LikeResult>(`/posts/${post.id}/react`, token, {
+      reaction: "like",
     });
 
-    const res = await apiPost(`/posts/${post.id}/react`, token, { reaction });
     if (!res.success) {
       // Rollback
-      setPost((p) => ({ ...p, ...prev }));
-    } else {
-      const d = res.data as {
-        reaction: "like" | "dislike" | null;
-        likes_count: number;
-        dislikes_count: number;
-      };
       setPost((p) => ({
         ...p,
-        viewer_has_liked: d.reaction === "like",
-        viewer_has_disliked: d.reaction === "dislike",
-        likes_count: d.likes_count,
-        dislikes_count: d.dislikes_count,
+        viewer_has_liked: wasLiked,
+        likes_count: wasLiked ? p.likes_count + 1 : p.likes_count - 1,
+      }));
+    } else {
+      setPost((p) => ({
+        ...p,
+        viewer_has_liked: res.data.liked,
+        likes_count: res.data.likes_count,
       }));
     }
-    setReactingPost(false);
+    setReactingLike(false);
   };
 
   // ── Repost / un-repost ────────────────────────────────────────────────────
 
   const handleRepost = async () => {
-    const res = await apiPost(`/posts/${post.id}/repost`, token);
+    const isUndoing = post.viewer_has_reposted;
+    if (isUndoing) {
+      const confirmUndo = window.confirm("Do you want to undo your repost?");
+      if (!confirmUndo) return;
+    }
+
+    const res = await apiPost<RepostResult>(`/posts/${post.id}/repost`, token);
+     if (res.success) {
+       setPost((p) => ({
+         ...p,
+         viewer_has_reposted: res.data.reposted,
+         reposts_count: res.data.reposts_count,
+       }));
+
+       // If we just UNDID a repost AND this specific card is the repost itself
+       // (identified by having a reposted_by_id), we should remove it from the feed.
+       if (!res.data.reposted && isUndoing) {
+         if (post.reposted_by_id === viewerUserId && onDelete) {
+           onDelete(post.id);
+         }
+       }
+
+       // If they just reposted, notify parent to add to feed
+       if (res.data.reposted && onRepost) {
+         onRepost({
+           ...post,
+           viewer_has_reposted: true,
+           reposts_count: res.data.reposts_count,
+           reposted_by_name: viewerName ?? "You",
+           reposted_by_id: viewerUserId,
+           reposted_at: new Date().toISOString(),
+         });
+       }
+     }
+  };
+
+  // ── Load likers and reposters ─────────────────────────────────────────────
+
+  const handleFetchLikers = async () => {
+    if (showLikers) return setShowLikers(false);
+    const res = await apiGet<{ likers: any[] }>(`/posts/${post.id}/likes`, token);
     if (res.success) {
-      const d = res.data as { reposted: boolean; reposts_count: number };
-      setPost((p) => ({
-        ...p,
-        viewer_has_reposted: d.reposted,
-        reposts_count: d.reposts_count,
-      }));
+      setLikers(res.data.likers);
+      setShowLikers(true);
+      setShowReposters(false);
+      setShowComments(false);
     }
   };
 
-  // ── Comments ──────────────────────────────────────────────────────────────
+  const handleFetchReposters = async () => {
+    if (showReposters) return setShowReposters(false);
+    const res = await apiGet<{ reposters: any[] }>(`/posts/${post.id}/reposts`, token);
+    if (res.success) {
+      setReposters(res.data.reposters);
+      setShowReposters(true);
+      setShowLikers(false);
+      setShowComments(false);
+    }
+  };
+
+  // ── Load comments ─────────────────────────────────────────────────────────
 
   const handleLoadComments = async () => {
     if (showComments) {
@@ -307,26 +532,56 @@ export function PostCard({
       return;
     }
     setLoadingComments(true);
-    const res = await apiGet(`/posts/${post.id}/comments`, token);
-    if (res.success) {
-      setComments((res.data as { comments: CommentData[] }).comments);
-    }
+    const res = await apiGet<CommentsResult>(
+      `/posts/${post.id}/comments`,
+      token,
+    );
+    if (res.success) setComments(res.data.comments);
     setLoadingComments(false);
     setShowComments(true);
+    setShowLikers(false);
+    setShowReposters(false);
   };
+
+  // ── Submit comment ────────────────────────────────────────────────────────
 
   const handleSubmitComment = async () => {
     if (!commentText.trim()) return;
     setSubmittingComment(true);
-    const res = await apiPost(`/posts/${post.id}/comments`, token, {
-      content: commentText.trim(),
-    });
+    const res = await apiPost<CommentData>(
+      `/posts/${post.id}/comments`,
+      token,
+      { content: commentText.trim(), parentId: replyingTo?.id },
+    );
     if (res.success) {
-      setComments((prev) => [...prev, res.data as CommentData]);
+      setComments((prev) => [...prev, res.data]);
       setCommentText("");
+      setReplyingTo(null);
       setPost((p) => ({ ...p, comments_count: p.comments_count + 1 }));
     }
     setSubmittingComment(false);
+  };
+
+  // ── Edit Post ─────────────────────────────────────────────────────────────
+
+  const handleEdit = async () => {
+    if (!editContent.trim()) return;
+    setSubmittingEdit(true);
+    // PUT /posts/:id requires an auth payload, backend route expects generic PUT body
+    const res = await fetch(`${API_BASE_URL}/posts/${post.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content: editContent.trim() }),
+    }).then(r => r.json());
+    
+    if (res.success) {
+      setPost((p) => ({ ...p, content: editContent.trim() }));
+      setIsEditing(false);
+    }
+    setSubmittingEdit(false);
   };
 
   // ── Delete ────────────────────────────────────────────────────────────────
@@ -341,7 +596,7 @@ export function PostCard({
 
   const handleReport = async () => {
     if (!reportReason.trim()) return;
-    await apiPost(`/posts/${post.id}/report`, token, {
+    await apiPost<null>(`/posts/${post.id}/report`, token, {
       reason: reportReason,
     });
     setShowReportInput(false);
@@ -355,33 +610,34 @@ export function PostCard({
       animate={{ opacity: 1, y: 0 }}
       className="bg-white border border-ventsafe-border rounded-ventsafe-md overflow-hidden"
     >
-      {/* Repost header — shown when this post appears in feed as a repost */}
+      {/* Repost header */}
       {post.reposted_by_name && (
-        <div className="flex items-center gap-1.5 px-4 pt-3 text-xs text-ventsafe-foreground/50">
-          <Repeat2 size={12} />
-          <span>
-            <span className="font-semibold">{post.reposted_by_name}</span>{" "}
-            reposted this
+        <div className="flex items-center gap-1.5 px-4 pt-3 pb-2 text-xs text-ventsafe-foreground/60 border-b border-ventsafe-border/30 bg-ventsafe-muted/20">
+          <Repeat2 size={13} className="text-ventsafe-navy" />
+          <span className="flex items-center gap-1.5">
+            <UserAvatar name={post.reposted_by_name} className="w-4 h-4 text-[8px]" />
+            <span className="font-semibold text-ventsafe-foreground">
+              {post.reposted_by_id === viewerUserId ? "You" : post.reposted_by_name}
+            </span>{" "}
+            reposted {post.original_author_name ? `${post.original_author_name}'s vent` : "this"}
           </span>
         </div>
       )}
 
       <div className="p-4">
-        {/* ── Post header ── */}
+        {/* ── Header ── */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5">
-            {/* Avatar */}
-            <div className="w-9 h-9 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-              {post.author_name.charAt(0)}
-            </div>
-            {/* Name + badge + time */}
+            <UserAvatar name={post.author_name} role={post.author_role} className="w-9 h-9 text-sm" />
             <div>
               <div className="flex items-center gap-1 flex-wrap">
                 <span className="text-sm font-semibold text-ventsafe-foreground">
-                  {post.author_name}
+                  {post.author_name ?? "Anonymous"}
                 </span>
-                {/* Verified badge — ONLY shown for counsellors */}
-                <AuthorBadge role={post.author_role} tier={post.author_tier} />
+                <AuthorBadge
+                  role={post.author_role ?? "student"}
+                  tier={post.author_tier}
+                />
               </div>
               <span className="text-[11px] text-ventsafe-foreground/40">
                 {formatDistanceToNow(new Date(post.created_at), {
@@ -391,23 +647,13 @@ export function PostCard({
             </div>
           </div>
 
-          {/* Right side: Vent type badge + menu + dismiss */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* "Vent" badge — this is a POST TYPE label, NOT a follow button.
-                Per the design screenshot: it appears top-right of counsellor posts.
-                It identifies the content as a "Vent" (vs an Article on Resources).
-                Follow button is only on the counsellor avatar strip below the mood slider. */}
-            {post.author_role === "counselor" && (
-              <span className="text-[11px] font-semibold text-ventsafe-navy border border-ventsafe-navy rounded-full px-2 py-0.5">
-                Vent
-              </span>
-            )}
+            {/* Post type badge: "Motivation" for counsellors, nothing for students */}
+            <PostTypeBadge authorRole={post.author_role} />
 
             {/* Three-dot menu */}
             <div className="relative">
               <button
-                type="button"
-                title="Post options"
                 onClick={() => setMenuOpen((o) => !o)}
                 className="p-1 hover:bg-ventsafe-muted rounded transition-colors"
               >
@@ -423,16 +669,28 @@ export function PostCard({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                     transition={{ duration: 0.1 }}
-                    className="absolute right-0 top-full mt-1 w-40 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
+                    className="absolute right-0 top-full mt-1 w-44 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
                   >
                     {isOwn ? (
-                      <button
-                        onClick={handleDelete}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
-                      >
-                        <Trash2 size={13} /> Delete post
-                      </button>
+                      <>
+                        <button
+                          onClick={() => {
+                            setIsEditing(true);
+                            setMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted"
+                        >
+                          <Edit3 size={13} /> Edit post
+                        </button>
+                        <button
+                          onClick={() => void handleDelete()}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                        >
+                          <Trash2 size={13} /> Delete post
+                        </button>
+                      </>
                     ) : (
+                      // Both students and counsellors can report any post
                       <button
                         onClick={() => {
                           setShowReportInput(true);
@@ -448,11 +706,10 @@ export function PostCard({
               </AnimatePresence>
             </div>
 
-            {/* Dismiss (X) — visible for non-own posts */}
+            {/* Dismiss (X) for non-own posts */}
             {!isOwn && (
               <button
-                title="Close"
-                type="button"
+                onClick={() => setMenuOpen(false)}
                 className="p-1 hover:bg-ventsafe-muted rounded transition-colors"
               >
                 <X size={13} className="text-ventsafe-foreground/30" />
@@ -461,18 +718,50 @@ export function PostCard({
           </div>
         </div>
 
-        {/* ── Content ── */}
-        <div className="mb-3">
-          <p className="text-sm text-ventsafe-foreground leading-relaxed whitespace-pre-line">
-            {displayContent}
-          </p>
-          {isLong && (
-            <button
-              onClick={() => setExpanded((e) => !e)}
-              className="text-xs text-ventsafe-navy font-medium mt-1 hover:underline"
-            >
-              {expanded ? "Show less" : "...more"}
-            </button>
+        {/* ── Content ────────────────────────────────────────────────────────── */}
+        <div
+          className={`mb-3 ${post.author_role === "counselor"
+            ? "bg-ventsafe-muted/40 rounded-ventsafe-sm px-3 py-2.5 border-l-2 border-ventsafe-navy"
+            : ""
+            }`}
+        >
+          {isEditing ? (
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2 text-xs focus:outline-none focus:border-ventsafe-navy resize-none min-h-[80px]"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="px-3 py-1.5 border border-ventsafe-border rounded-ventsafe-sm text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => void handleEdit()}
+                  disabled={submittingEdit || !editContent.trim()}
+                  className="px-3 py-1.5 bg-ventsafe-navy text-white rounded-ventsafe-sm text-xs disabled:opacity-50 transition-colors"
+                >
+                  {submittingEdit ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-ventsafe-foreground leading-relaxed whitespace-pre-line">
+                {displayContent}
+              </p>
+              {isLong && (
+                <button
+                  onClick={() => setExpanded((e) => !e)}
+                  className="text-xs text-ventsafe-navy font-medium mt-1.5 hover:underline"
+                >
+                  {expanded ? "Show less" : "...more"}
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -484,11 +773,11 @@ export function PostCard({
         </div>
 
         {/* ── Counts ── */}
-        <div className="flex items-center gap-3 text-xs text-ventsafe-foreground/50 mb-3">
+        <div className="flex items-center gap-3 text-xs text-ventsafe-foreground/50 mb-3 select-none">
           {post.likes_count > 0 && (
-            <span>
+            <button onClick={() => void handleFetchLikers()} className="hover:text-ventsafe-foreground transition-colors hover:underline">
               {post.likes_count} like{post.likes_count !== 1 ? "s" : ""}
-            </span>
+            </button>
           )}
           {post.comments_count > 0 && (
             <span>
@@ -497,75 +786,65 @@ export function PostCard({
             </span>
           )}
           {post.reposts_count > 0 && (
-            <span>
-              {post.reposts_count} repost{post.reposts_count !== 1 ? "s" : ""}
-            </span>
+            <button onClick={() => void handleFetchReposters()} className="hover:text-ventsafe-foreground transition-colors hover:underline">
+              {post.reposts_count} repost
+              {post.reposts_count !== 1 ? "s" : ""}
+            </button>
           )}
         </div>
 
-        {/* ── Action bar ── */}
-        <div className="flex items-center justify-between pt-2 border-t border-ventsafe-border/30">
-          {/* Like button — active = navy, clicking again = unlike */}
+        {/* ── Action bar ─────────────────────────────────────────────────────
+            Permissions per flow diagram:
+            LIKE/UNLIKE  → everyone (toggle via single button)
+            COMMENT      → only when canComment() is true (see helper above)
+            REPOST       → everyone
+            SEND         → everyone
+            DISLIKE      → REMOVED (not in flow diagram)
+        ── */}
+        <div className="flex items-center gap-1 pt-2 border-t border-ventsafe-border/30">
+          {/* Like / Unlike toggle */}
           <button
-            onClick={() => handleReact("like")}
-            disabled={reactingPost}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors ${
-              post.viewer_has_liked
-                ? "text-ventsafe-navy bg-ventsafe-muted"
-                : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
-            }`}
+            onClick={() => void handleLike()}
+            disabled={reactingLike}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors flex-1 justify-center ${post.viewer_has_liked
+              ? "text-ventsafe-navy bg-ventsafe-muted"
+              : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
+              }`}
           >
             <ThumbsUp
               size={14}
               className={post.viewer_has_liked ? "fill-ventsafe-navy" : ""}
             />
-            Like
+            {post.viewer_has_liked ? "Liked" : "Like"}
           </button>
 
-          {/* Comment button — only shown if user can comment */}
-          {canComment && (
+          {/* Comment — only shown when permission allows */}
+          {showCommentButton && (
             <button
-              onClick={handleLoadComments}
-              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm text-ventsafe-foreground/60 hover:bg-ventsafe-muted transition-colors"
+              onClick={() => void handleLoadComments()}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm text-ventsafe-foreground/60 hover:bg-ventsafe-muted transition-colors flex-1 justify-center"
             >
               <MessageCircle size={14} />
               Comment
             </button>
           )}
 
-          {/* Repost button — active = green, clicking again = un-repost */}
+          {/* Repost — everyone */}
           <button
-            onClick={handleRepost}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors ${
-              post.viewer_has_reposted
-                ? "text-green-600 bg-green-50"
-                : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
-            }`}
+            onClick={() => void handleRepost()}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors flex-1 justify-center ${post.viewer_has_reposted
+              ? "text-green-600 bg-green-50"
+              : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
+              }`}
           >
             <Repeat2 size={14} />
-            Repost
+            {post.viewer_has_reposted ? "Reposted" : "Repost"}
           </button>
 
-          {/* Send button */}
-          <button className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm text-ventsafe-foreground/60 hover:bg-ventsafe-muted transition-colors">
+          {/* Send — everyone */}
+          <button className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm text-ventsafe-foreground/60 hover:bg-ventsafe-muted transition-colors flex-1 justify-center">
             <Send size={14} />
             Send
-          </button>
-
-          {/* Dislike button — shown on far right, styled subtly */}
-          <button
-            onClick={() => handleReact("dislike")}
-            disabled={reactingPost}
-            className={`flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-ventsafe-sm transition-colors ${
-              post.viewer_has_disliked
-                ? "text-red-500 bg-red-50"
-                : "text-ventsafe-foreground/30 hover:bg-ventsafe-muted hover:text-ventsafe-foreground/60"
-            }`}
-          >
-            <ThumbsDown
-              size={13}
-              className={post.viewer_has_disliked ? "fill-red-500" : ""}
-            />
           </button>
         </div>
 
@@ -587,7 +866,7 @@ export function PostCard({
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={handleReport}
+                    onClick={() => void handleReport()}
                     disabled={!reportReason.trim()}
                     className="px-3 py-1.5 bg-red-500 text-white rounded-ventsafe-sm text-xs font-medium disabled:opacity-40"
                   >
@@ -622,40 +901,112 @@ export function PostCard({
                 ) : comments.length === 0 ? (
                   <p className="text-xs text-ventsafe-foreground/40 py-2">
                     No comments yet.
-                    {canComment ? " Be the first." : ""}
+                    {showCommentButton ? " Be the first." : ""}
                   </p>
                 ) : (
                   <div>
                     {comments.map((c) => (
-                      <CommentItem key={c.id} comment={c} token={token} />
+                      <CommentItem 
+                        key={c.id} 
+                        comment={c} 
+                        token={token} 
+                        viewerUserId={viewerUserId}
+                        onDeleted={(commentId) => {
+                          setComments(prev => prev.filter(x => x.id !== commentId));
+                          setPost(p => ({ ...p, comments_count: Math.max(0, p.comments_count - 1) }));
+                        }}
+                        onReply={(commentId, authorName) => setReplyingTo({ id: commentId, name: authorName })}
+                      />
                     ))}
                   </div>
                 )}
 
-                {/* Comment input — only shown to users who can comment */}
-                {canComment && (
-                  <div className="flex gap-2 mt-3">
-                    <input
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSubmitComment();
+                {/* Comment input — only shown when permission allows */}
+                {showCommentButton && (
+                  <div className="flex flex-col gap-2 mt-3">
+                    {replyingTo && (
+                      <div className="flex items-center justify-between bg-ventsafe-muted/40 px-3 py-1.5 rounded-ventsafe-sm border border-ventsafe-border/50">
+                        <span className="text-[10px] text-ventsafe-foreground/60">
+                          Replying to <span className="font-semibold">{replyingTo.name}</span>
+                        </span>
+                        <button onClick={() => setReplyingTo(null)} className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground transition-colors">
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            void handleSubmitComment();
+                          }
+                        }}
+                        placeholder={
+                          replyingTo 
+                            ? "Write a reply..."
+                            : viewerRole === "counselor"
+                            ? "Write a reply to support this student..."
+                            : "Write a comment..."
                         }
-                      }}
-                      placeholder="Write a comment..."
-                      className="flex-1 border border-ventsafe-border rounded-ventsafe-full px-3 py-1.5 text-xs focus:outline-none focus:border-ventsafe-navy"
-                    />
-                    <button
-                      onClick={handleSubmitComment}
-                      disabled={!commentText.trim() || submittingComment}
-                      className="px-3 py-1.5 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-full text-xs font-medium disabled:opacity-40 hover:opacity-90"
-                    >
-                      Post
-                    </button>
+                        className="flex-1 border border-ventsafe-border rounded-ventsafe-full px-3 py-1.5 text-xs focus:outline-none focus:border-ventsafe-navy"
+                      />
+                      <button
+                        onClick={() => void handleSubmitComment()}
+                        disabled={!commentText.trim() || submittingComment}
+                        className="px-3 py-1.5 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-full text-xs font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+                      >
+                        {replyingTo ? "Reply" : "Post"}
+                      </button>
+                    </div>
                   </div>
                 )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Likers List ── */}
+        <AnimatePresence>
+          {showLikers && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="pt-3 border-t border-ventsafe-border/30 mt-3 space-y-2">
+                <div className="flex items-center justify-between pb-1">
+                  <h4 className="text-xs font-semibold text-ventsafe-foreground">Liked by</h4>
+                  <button onClick={() => setShowLikers(false)} className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground"><X size={12}/></button>
+                </div>
+                {likers.map((u, i) => (
+                  <div key={i} className="flex items-center gap-2 py-1.5">
+                    <UserAvatar name={u.anonymous_name} role={u.role} className="w-6 h-6 text-[10px]" />
+                    <span className="text-xs font-medium">{u.anonymous_name}</span>
+                    <AuthorBadge role={u.role} tier={u.tier} />
+                  </div>
+                ))}
+                {likers.length === 0 && <p className="text-xs text-ventsafe-foreground/50 py-2">No one has liked this yet.</p>}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Reposters List ── */}
+        <AnimatePresence>
+          {showReposters && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="pt-3 border-t border-ventsafe-border/30 mt-3 space-y-2">
+                <div className="flex items-center justify-between pb-1">
+                  <h4 className="text-xs font-semibold text-ventsafe-foreground">Reposted by</h4>
+                  <button onClick={() => setShowReposters(false)} className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground"><X size={12}/></button>
+                </div>
+                {reposters.map((u, i) => (
+                  <div key={i} className="flex items-center gap-2 py-1.5">
+                    <UserAvatar name={u.anonymous_name} role={u.role} className="w-6 h-6 text-[10px]" />
+                    <span className="text-xs font-medium">{u.anonymous_name}</span>
+                    <AuthorBadge role={u.role} tier={u.tier} />
+                  </div>
+                ))}
+                {reposters.length === 0 && <p className="text-xs text-ventsafe-foreground/50 py-2">No one has reposted this yet.</p>}
               </div>
             </motion.div>
           )}

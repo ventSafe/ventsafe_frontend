@@ -16,7 +16,7 @@ import { Logo } from "@/components/shared/Logo";
 import { Footer } from "@/components/shared/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signup } from "@/lib/auth";
+import { signup, checkAccountExists } from "@/lib/auth";
 import { encryptPrivateKey } from "@/lib/blockchain/keys";
 import { STORAGE_KEYS, API_BASE_URL } from "@/config/constants";
 
@@ -97,6 +97,7 @@ export default function CounsellorSignupPage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isSavingPin, setIsSavingPin] = useState(false);
   const [isPinComplete, setIsPinComplete] = useState(false);
+  const [existsInDb, setExistsInDb] = useState(false);
 
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
@@ -166,6 +167,11 @@ export default function CounsellorSignupPage() {
       setAnonymousName(savedName || "");
       if (savedGender) setGender(savedGender);
       setStep(alreadyPinned ? "form" : "keys");
+
+      // Verify if this key actually belongs to a DB user
+      checkAccountExists(savedPublicKey).then((res) => {
+        if (res?.exists) setExistsInDb(true);
+      });
     }
   }, []);
 
@@ -398,7 +404,7 @@ export default function CounsellorSignupPage() {
                     transition={{ delay: 0.2 }}
                     className="text-ventsafe-sub-heading font-bold text-ventsafe-foreground mb-3"
                   >
-                    Join as a Counsellor
+                    {existsInDb ? "Welcome back" : "Join as a Counsellor"}
                   </motion.h1>
 
                   <motion.p
@@ -499,7 +505,13 @@ export default function CounsellorSignupPage() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => handleGenerateKeyPair(false)}
+                    onClick={() => {
+                      if (existsInDb) {
+                        router.push("/login"); // or directly to PIN modal if we had one
+                      } else {
+                        handleGenerateKeyPair(false);
+                      }
+                    }}
                     disabled={isGenerating}
                     className="bg-ventsafe-foreground text-white px-10 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity text-ventsafe-st disabled:opacity-70 cursor-pointer shadow-lg shadow-ventsafe-foreground/25"
                   >
@@ -519,7 +531,7 @@ export default function CounsellorSignupPage() {
                         Generating...
                       </span>
                     ) : (
-                      "Generate My Counsellor Keys"
+                      existsInDb ? "Log in to my Account" : "Generate My Counsellor Keys"
                     )}
                   </motion.button>
                 </motion.div>

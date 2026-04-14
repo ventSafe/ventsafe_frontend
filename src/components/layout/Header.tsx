@@ -4,9 +4,16 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Stethoscope, ChevronDown } from "lucide-react";
+import { GraduationCap, Stethoscope, ChevronDown, User, LogOut } from "lucide-react";
 import { Logo } from "../shared/Logo";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  checkAccountExists,
+  checkAssociatedAccount,
+  logout as apiLogout,
+} from "@/lib/auth";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -33,11 +40,48 @@ const ventOptions = [
   },
 ];
 
+function RoleBadge({ role }: { role: string }) {
+  if (role === "counselor") {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+        Counsellor
+      </span>
+    );
+  }
+  if (role === "counsellor_pending") {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
+        Pending
+      </span>
+    );
+  }
+  if (role === "admin") {
+    return (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-ventsafe-navy text-white">
+        Admin
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+      Student
+    </span>
+  );
+}
+
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const { isAuthenticated, user, anonymousName, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [hasStudentAccount, setHasStudentAccount] = useState(false);
+  const [hasCounsellorAccount, setHasCounsellorAccount] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -55,8 +99,49 @@ export function Header() {
     setOpen(false);
   }, [pathname]);
 
+  // Check for existing accounts
+  useEffect(() => {
+    async function checkAccounts() {
+      const studentKey = localStorage.getItem("ventsafe-signup-public-key");
+      const counsellorKey = localStorage.getItem("ventsafe-counsellor-public-key");
+
+      // Key-based check
+      if (studentKey) {
+        const res = await checkAccountExists(studentKey);
+        if (res?.exists) setHasStudentAccount(true);
+      }
+      if (counsellorKey) {
+        const res = await checkAccountExists(counsellorKey);
+        if (res?.exists) setHasCounsellorAccount(true);
+      }
+
+      // Name-based DB check (if logged in, check for existence of other role)
+      if (isAuthenticated && anonymousName) {
+        const studentCheck = await checkAssociatedAccount(anonymousName, "student");
+        if (studentCheck.exists) setHasStudentAccount(true);
+
+        const counsellorCheck = await checkAssociatedAccount(anonymousName, "counselor");
+        if (counsellorCheck.exists) setHasCounsellorAccount(true);
+      }
+    }
+    checkAccounts();
+  }, [isAuthenticated, anonymousName]);
+
+  const handleSwitchAccount = async (targetRole: "student" | "counselor") => {
+    // 1. Log out current session
+    await apiLogout();
+    // 2. Redirect to specific page which will pick up the saved keys
+    if (targetRole === "student") {
+      router.push("/signup");
+    } else {
+      router.push("/signup/counsellor");
+    }
+  };
+
+  const dashboardHref = user?.role === "admin" ? "/admin" : "/vent-space";
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-ventsafe-background/60 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-ventsafe-background/60 backdrop-blur-md border-b border-ventsafe-border/10">
       <div className="container mx-auto px-6 py-2.5">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -69,113 +154,125 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "text-ventsafe-st font-normal transition-colors relative",
+                  "text-ventsafe-btn-sm font-medium transition-colors relative",
                   pathname === link.href
                     ? "text-ventsafe-navy"
-                    : "text-ventsafe-foreground hover:text-ventsafe-navy",
+                    : "text-ventsafe-foreground/60 hover:text-ventsafe-navy",
                 )}
               >
                 {link.label}
                 {pathname === link.href && (
-                  <span className="absolute -bottom-1 left-0 right-0 border-b border-ventsafe-foreground z-20" />
+                  <span className="absolute -bottom-1 left-0 right-0 border-b border-ventsafe-navy z-20" />
                 )}
               </Link>
             ))}
           </nav>
 
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            {/* Vent Now — dropdown trigger */}
-            <div className="relative" ref={menuRef}>
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-3 py-1 bg-ventsafe-foreground text-ventsafe-background text-ventsafe-btn-sm rounded-ventsafe-tiny cursor-pointer select-none"
-              >
-                Vent Now
-                <motion.span
-                  animate={{ rotate: open ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </motion.span>
-              </motion.button>
+          {/* Auth Section */}
+          <div className="flex items-center gap-4">
+            {mounted && isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 pr-2 border-r border-ventsafe-border/30">
+                  {/* Avatar & Info */}
+                  <UserAvatar name={anonymousName} role={user?.role} className="w-8 h-8 text-xs" />
+                  <div className="hidden lg:flex flex-col items-start leading-tight">
+                    <span className="text-xs font-bold text-ventsafe-foreground truncate max-w-[100px]">
+                      {anonymousName}
+                    </span>
+                    <RoleBadge role={user?.role || "student"} />
+                  </div>
+                </div>
 
-              <AnimatePresence>
-                {open && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 26 }}
-                    className="absolute right-0 mt-2 w-72 bg-white border border-ventsafe-border rounded-2xl shadow-xl shadow-ventsafe-foreground/10 overflow-hidden z-50"
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={dashboardHref}
+                    className="bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity"
                   >
-                    <div className="p-2">
-                      {ventOptions.map(
-                        (
-                          { href, label, description, Icon, badge, badgeColor },
-                          i,
-                        ) => (
-                          <motion.button
-                            key={href}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.06 }}
-                            onClick={() => {
-                              setOpen(false);
-                              router.push(href);
-                            }}
-                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-ventsafe-background transition-colors cursor-pointer text-left"
-                          >
-                            <div className="w-10 h-10 rounded-xl bg-ventsafe-foreground/8 flex items-center justify-center shrink-0">
-                              <Icon className="w-5 h-5 text-ventsafe-foreground" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-ventsafe-tiny font-semibold text-ventsafe-foreground">
-                                  {label}
-                                </span>
-                                <span
-                                  className={`text-[0.7rem] px-1.5 py-0.5 rounded-full font-medium ${badgeColor}`}
-                                >
-                                  {badge}
-                                </span>
-                              </div>
-                              <p className="text-ventsafe-tiny text-ventsafe-foreground/50 truncate">
-                                {description}
-                              </p>
-                            </div>
-                          </motion.button>
-                        ),
-                      )}
-                    </div>
+                    Go to Platform
+                  </Link>
+                  <button
+                    onClick={logout}
+                    title="Logout"
+                    className="p-1.5 text-ventsafe-foreground/40 hover:text-red-500 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
 
-                    <div className="border-t border-ventsafe-border/50 px-4 py-2.5">
-                      <p className="text-ventsafe-tiny text-ventsafe-foreground/40 text-center">
-                        Already have keys?{" "}
-                        <button
-                          onClick={() => {
-                            setOpen(false);
-                            router.push("/login");
-                          }}
-                          className="text-ventsafe-foreground/70 hover:text-ventsafe-foreground hover:underline cursor-pointer"
-                        >
-                          Log in here
-                        </button>
-                      </p>
-                    </div>
-                  </motion.div>
+                {/* Switch Account Logic */}
+                {user?.role === "student" && hasCounsellorAccount && (
+                  <button
+                    onClick={() => handleSwitchAccount("counselor")}
+                    className="hidden lg:flex items-center gap-1.5 text-[10px] font-bold text-ventsafe-foreground/60 hover:text-ventsafe-foreground transition-colors cursor-pointer border border-ventsafe-border/30 px-2 py-1 rounded-full"
+                  >
+                    <Stethoscope className="w-2.5 h-2.5" />
+                    Switch to Counsellor
+                  </button>
                 )}
-              </AnimatePresence>
-            </div>
+                {user?.role === "counselor" && hasStudentAccount && (
+                  <button
+                    onClick={() => handleSwitchAccount("student")}
+                    className="hidden lg:flex items-center gap-1.5 text-[10px] font-bold text-ventsafe-foreground/60 hover:text-ventsafe-foreground transition-colors cursor-pointer border border-ventsafe-border/30 px-2 py-1 rounded-full"
+                  >
+                    <GraduationCap className="w-2.5 h-2.5" />
+                    Switch to Student
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/login"
+                  className="text-ventsafe-btn-sm font-medium text-ventsafe-foreground/60 hover:text-ventsafe-foreground transition-colors"
+                >
+                  Log in
+                </Link>
+                <div className="relative" ref={menuRef}>
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setOpen((v) => !v)}
+                    className="bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                  >
+                    Sign up
+                    <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
+                  </motion.button>
 
-            {/* Login */}
-            <Link
-              href="/login"
-              className="border border-ventsafe-foreground text-ventsafe-foreground px-6 py-1 rounded-ventsafe-tiny text-ventsafe-btn-sm hover:bg-ventsafe-foreground hover:text-ventsafe-primary-foreground transition-colors"
-            >
-              Login
-            </Link>
+                  <AnimatePresence>
+                    {open && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                        className="absolute right-0 mt-2 w-56 bg-white border border-ventsafe-border rounded-xl shadow-xl overflow-hidden z-50"
+                      >
+                        <div className="p-1.5 flex flex-col">
+                          <button
+                            onClick={() => { setOpen(false); router.push("/signup"); }}
+                            className="w-full text-left px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted rounded-lg transition-colors flex flex-col gap-0.5"
+                          >
+                            <div className="flex items-center gap-2">
+                              <GraduationCap className="w-4 h-4" />
+                              <span className="font-semibold">{hasStudentAccount ? "Login as Student" : "Sign up as Student"}</span>
+                            </div>
+                            {hasStudentAccount && <span className="text-[10px] text-ventsafe-foreground/50 ml-6">Saved account detected</span>}
+                          </button>
+                          <button
+                            onClick={() => { setOpen(false); router.push("/signup/counsellor"); }}
+                            className="w-full text-left px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted rounded-lg transition-colors flex flex-col gap-0.5"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Stethoscope className="w-4 h-4" />
+                              <span className="font-semibold">{hasCounsellorAccount ? "Login as Counsellor" : "Sign up as Counsellor"}</span>
+                            </div>
+                            {hasCounsellorAccount && <span className="text-[10px] text-ventsafe-foreground/50 ml-6">Saved account detected</span>}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

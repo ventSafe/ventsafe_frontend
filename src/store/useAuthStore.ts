@@ -146,25 +146,31 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   clearAuth: () => {
-    // Student signup keys
+    // ── Wipe session-sensitive data ──────────────────────────────────────────
+    // Auth tokens
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+    // Encrypted / raw private keys — these must NEVER persist after logout
     localStorage.removeItem(STORAGE_KEYS.ENCRYPTED_PRIVATE_KEY);
     localStorage.removeItem(STORAGE_KEYS.PUBLIC_KEY);
     localStorage.removeItem(STORAGE_KEYS.ANONYMOUS_ID);
-    localStorage.removeItem("ventsafe-anon-name");
-    localStorage.removeItem("ventsafe-signup-public-key");
     localStorage.removeItem("ventsafe-signup-private-key");
     localStorage.removeItem("ventsafe-signup-anon-name");
     localStorage.removeItem("ventsafe-signup-gender");
     localStorage.removeItem("ventsafe-signup-agreed");
-    // Counsellor signup keys
-    localStorage.removeItem("ventsafe-counsellor-public-key");
     localStorage.removeItem("ventsafe-counsellor-private-key");
     localStorage.removeItem("ventsafe-counsellor-anon-name");
     localStorage.removeItem("ventsafe-counsellor-gender");
     localStorage.removeItem("ventsafe-counsellor-agreed");
     localStorage.removeItem("ventsafe-counsellor-encrypted-key");
+    localStorage.removeItem("ventsafe-anon-name");
+
+    // ── Intentionally NOT removed ────────────────────────────────────────────
+    // "ventsafe-signup-public-key"      — public key for student account
+    // "ventsafe-counsellor-public-key"  — public key for counsellor account
+    // These contain no secret; they are needed after logout so the switch-account
+    // modal can call POST /auth/check-account and show "Log in" instead of "Sign up".
+
     set({
       user: null,
       isAuthenticated: false,

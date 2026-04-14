@@ -3,7 +3,7 @@ import UsersClient from "./UserClient"
 
 
 export const metadata: Metadata = {
-      title: "Users| VentSafe Admin",
+      title: "Users | VentSafe Admin",
   description: "Review and manage Users"
 }
 

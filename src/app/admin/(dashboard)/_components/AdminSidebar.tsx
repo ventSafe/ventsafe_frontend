@@ -43,7 +43,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
     ? [...BASE_LINKS, ...SUPER_LINKS]
     : BASE_LINKS;
 
-  const NavContent = () => (
+  const renderNavContent = () => (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="p-5 border-b border-ventsafe-border/30">
@@ -184,7 +184,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="hidden lg:flex flex-col bg-white border-r border-ventsafe-border/40 shrink-0 overflow-hidden h-screen sticky top-0 relative"
       >
-        <NavContent />
+        {renderNavContent()}
       </motion.aside>
 
       {/* Mobile toggle */}
@@ -213,7 +213,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-ventsafe-border/40 z-50 lg:hidden"
             >
-              <NavContent />
+              {renderNavContent()}
             </motion.aside>
           </>
         )}

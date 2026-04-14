@@ -1,55 +1,84 @@
-/**
- * useAuth hook
- * Convenient shortcut for accessing auth state from any component.
- *
- * Usage:
- *   const { user, isAuthenticated, logout } = useAuth();
- */
-
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { logout as logoutApi } from "@/lib/auth";
-import { useRouter, usePathname } from "next/navigation";
-import { ROUTES } from "@/config/constants";
+import { STORAGE_KEYS } from "@/config/constants";
+
+// ─── Safe localStorage helper ─────────────────────────────────────────────────
+
+function safeLS(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+// ─── useAuth hook ─────────────────────────────────────────────────────────────
 
 export function useAuth() {
   const router = useRouter();
-  const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, isInitialized, clearAuth } =
-    useAuthStore();
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+    isInitialized,
+    setUser,
+    clearAuth,
+  } = useAuthStore();
 
-  const logout = async () => {
-    // Save current page so we can redirect back after login
-    const skipSave = ["/login", "/signup", "/onboarding", "/welcome"];
-    const shouldSave = !skipSave.some((p) => pathname.startsWith(p));
-    if (shouldSave && pathname !== "/") {
-      localStorage.setItem("ventsafe-redirect-after-login", pathname);
-    }
-    await logoutApi(); // Calls backend — blacklists token AND clears cookies
-    clearAuth(); // Clears store + localStorage
-    // Use window.location for a full page reload so AuthProvider
-    // starts completely fresh — prevents stale auth state loops
-    window.location.href = "/login";
-  };
-
-  // Read gender from user or localStorage
-  const gender = (user?.gender ||
-    localStorage.getItem("ventsafe-signup-gender") ||
-    localStorage.getItem("ventsafe-counsellor-gender") ||
+  // Gender — from user object first, then localStorage fallbacks
+  // safeLS returns null on server, so this is always safe
+  const gender = (user?.gender ??
+    safeLS(STORAGE_KEYS.GENDER) ??
+    safeLS("ventsafe-signup-gender") ??
+    safeLS("ventsafe-counsellor-gender") ??
     "male") as "male" | "female";
+
+  // Anonymous name — from user object first, then localStorage fallbacks
+  const anonymousName =
+    user?.anonymousName ??
+    safeLS("ventsafe-anon-name") ??
+    safeLS("ventsafe-counsellor-anon-name") ??
+    "Anonymous";
+
+  // Auth token — only available in browser; empty string on server
+  const token = safeLS(STORAGE_KEYS.AUTH_TOKEN) ?? "";
+
+  // ── Logout ──────────────────────────────────────────────────────────────────
+
+  const logout = useCallback(async () => {
+    // Save current page so the login page can redirect back after re-login
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const SKIP = ["/login", "/login/counsellor", "/signup", "/signup/counsellor", "/welcome", "/"];
+      if (!SKIP.some((p) => currentPath.startsWith(p))) {
+        localStorage.setItem("ventsafe-redirect-after-login", currentPath);
+      }
+    }
+
+    try {
+      await logoutApi();
+    } catch {
+      // API call failed — still proceed with local logout
+    }
+
+    clearAuth();
+
+    // Full page reload so AuthProvider re-runs checkAuth from a clean state
+    window.location.href = "/login";
+  }, [clearAuth]);
 
   return {
     user,
     isAuthenticated,
     isLoading,
     isInitialized,
-    logout,
     gender,
-    // Shortcuts
-    anonymousName:
-      user?.anonymousName ?? localStorage.getItem("ventsafe-anon-name") ?? "",
-    role: user?.role ?? null,
-    isStudent: user?.role === "student",
-    isCounselor: user?.role === "counselor",
-    isAdmin: user?.role === "admin",
+    anonymousName,
+    token,
+    logout,
+    setUser,
   };
 }

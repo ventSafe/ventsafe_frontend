@@ -1,0 +1,13 @@
+﻿src/lib/blockchain/keys.ts(26,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(algorithm: AlgorithmIdentifier | EcdhKeyDeriveParams | HkdfParams | Pbkdf2Params, baseKey: CryptoKey, derivedKeyType: AlgorithmIdentifier | ... 3 more ... | AesDerivedKeyParams, extractable: boolean, keyUsages: Iterable<...>): Promise<...>', gave the following error.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BufferSource'.
+      Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+        Types of property 'buffer' are incompatible.
+          Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+            Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+  Overload 2 of 2, '(algorithm: AlgorithmIdentifier | EcdhKeyDeriveParams | HkdfParams | Pbkdf2Params, baseKey: CryptoKey, derivedKeyType: AlgorithmIdentifier | ... 3 more ... | AesDerivedKeyParams, extractable: boolean, keyUsages: KeyUsage[]): Promise<...>', gave the following error.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BufferSource'.
+      Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+        Types of property 'buffer' are incompatible.
+          Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+            Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength

@@ -29,7 +29,14 @@ async function apiFetch<T>(
 }
 
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+  let token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+  
+  // Fallback to cookie if localStorage is empty
+  if (!token) {
+    const match = document.cookie.match(/ventsafe-token=([^;]+)/);
+    if (match) token = match[1];
+  }
+  
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -190,3 +197,48 @@ export async function fetchCurrentUser(): Promise<ApiResponse<User>> {
     };
   }
 }
+
+/**
+ * Checks if a public key stored in localStorage actually exists in the database.
+ * Returns { exists: boolean, role: string | null } or null on network error.
+ */
+export async function checkAccountExists(
+  publicKey: string,
+): Promise<{ exists: boolean; role: string | null } | null> {
+  try {
+    const res = await apiFetch<{ exists: boolean; role: string | null }>(
+      "/auth/check-account",
+      {
+        method: "POST",
+        body: JSON.stringify({ publicKey }),
+      },
+    );
+    if (res.success && res.data) return res.data;
+    return { exists: false, role: null };
+  } catch {
+    return null; // network error — fall back gracefully
+  }
+}
+
+/**
+ * Checks for existence of an account with a specific name and role.
+ * Used for "Account Switching" UI to detect other roles via the DB.
+ */
+export async function checkAssociatedAccount(
+  anonymousName: string,
+  targetRole: string,
+): Promise<{ exists: boolean }> {
+  try {
+    const res = await apiFetch<{ exists: boolean }>("/auth/check-associated", {
+      method: "POST",
+      body: JSON.stringify({ anonymousName, targetRole }),
+      headers: getAuthHeader(),
+    });
+    if (res.success && res.data) return res.data;
+    return { exists: false };
+  } catch {
+    return { exists: false };
+  }
+}
+
+
