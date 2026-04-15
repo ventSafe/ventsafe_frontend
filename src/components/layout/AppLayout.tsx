@@ -429,7 +429,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   {link.icon}
                   {link.label}
                   {isActive && (
-                    <span className="absolute -bottom-[14px] left-0 right-0 h-[2px] bg-ventsafe-navy rounded-full" />
+                    <span className="absolute -bottom-3.5 left-0 right-0 h-0.5 bg-ventsafe-navy rounded-full" />
                   )}
                 </Link>
               );
@@ -449,7 +449,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-ventsafe-full border border-ventsafe-border bg-white hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
               >
                 <UserAvatar name={anonymousName} role={userRole} className="w-8 h-8 text-xs" />
-                <span className="text-sm font-semibold text-ventsafe-foreground hidden md:inline max-w-[120px] truncate">
+                <span className="text-sm font-semibold text-ventsafe-foreground hidden md:inline max-w-30 truncate">
                   {anonymousName}
                 </span>
                 <motion.div

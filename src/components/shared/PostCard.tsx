@@ -178,8 +178,6 @@ function AuthorBadge({
   );
 }
 
-
-
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
 async function apiPost<T>(
@@ -254,15 +252,18 @@ function CommentItem({
   const handleEdit = async () => {
     if (!editContent.trim()) return;
     setSubmitting(true);
-    const res = await fetch(`${API_BASE_URL}/posts/${comment.post_id}/comments/${comment.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+    const res = await fetch(
+      `${API_BASE_URL}/posts/${comment.post_id}/comments/${comment.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: editContent.trim() }),
       },
-      body: JSON.stringify({ content: editContent.trim() }),
-    }).then(r => r.json());
-    
+    ).then((r) => r.json());
+
     if (res.success) {
       comment.content = editContent.trim();
       setIsEditing(false);
@@ -271,7 +272,10 @@ function CommentItem({
   };
 
   const handleDelete = async () => {
-    const res = await apiDelete(`/posts/${comment.post_id}/comments/${comment.id}`, token);
+    const res = await apiDelete(
+      `/posts/${comment.post_id}/comments/${comment.id}`,
+      token,
+    );
     if (res.success) {
       onDeleted(comment.id);
     }
@@ -279,22 +283,34 @@ function CommentItem({
 
   return (
     <div className="flex gap-2.5 py-2.5 border-b border-ventsafe-border/30 last:border-0 relative group">
-      <UserAvatar name={comment.author_name} role={comment.author_role} className="w-7 h-7 text-xs" />
+      <UserAvatar
+        name={comment.author_name}
+        role={comment.author_role}
+        className="w-7 h-7 text-xs"
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-1 flex-wrap mb-0.5">
             <span className="text-xs font-semibold text-ventsafe-foreground">
               {comment.author_name}
             </span>
-            <AuthorBadge role={comment.author_role} tier={comment.author_tier} />
+            <AuthorBadge
+              role={comment.author_role}
+              tier={comment.author_tier}
+            />
             <span className="text-[10px] text-ventsafe-foreground/40">
-              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+              {formatDistanceToNow(new Date(comment.created_at), {
+                addSuffix: true,
+              })}
             </span>
           </div>
 
           {/* Comment 3-dot menu */}
           <div className="relative opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => setMenuOpen(!menuOpen)} className="p-0.5 text-ventsafe-foreground/40 hover:text-ventsafe-foreground rounded">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-0.5 text-ventsafe-foreground/40 hover:text-ventsafe-foreground rounded"
+            >
               <MoreHorizontal size={13} />
             </button>
             <AnimatePresence>
@@ -307,10 +323,22 @@ function CommentItem({
                 >
                   {isOwn && (
                     <>
-                      <button onClick={() => { setIsEditing(true); setMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-ventsafe-foreground hover:bg-ventsafe-muted">
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          setMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-ventsafe-foreground hover:bg-ventsafe-muted"
+                      >
                         <Edit3 size={12} /> Edit
                       </button>
-                      <button onClick={() => { void handleDelete(); setMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50">
+                      <button
+                        onClick={() => {
+                          void handleDelete();
+                          setMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50"
+                      >
                         <Trash2 size={12} /> Delete
                       </button>
                     </>
@@ -326,11 +354,23 @@ function CommentItem({
             <textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-2 py-1.5 text-xs focus:outline-none focus:border-ventsafe-navy resize-none min-h-[50px]"
+              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-2 py-1.5 text-xs focus:outline-none focus:border-ventsafe-navy resize-none min-h-12.5"
             />
             <div className="flex justify-end gap-1.5">
-              <button disabled={submitting} onClick={() => setIsEditing(false)} className="px-2 py-1 text-[10px] border border-ventsafe-border rounded transition-colors">Cancel</button>
-              <button disabled={submitting || !editContent.trim()} onClick={() => void handleEdit()} className="px-2 py-1 bg-ventsafe-navy text-white rounded text-[10px] disabled:opacity-50 transition-colors">{submitting ? "Saving..." : "Save"}</button>
+              <button
+                disabled={submitting}
+                onClick={() => setIsEditing(false)}
+                className="px-2 py-1 text-[10px] border border-ventsafe-border rounded transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={submitting || !editContent.trim()}
+                onClick={() => void handleEdit()}
+                className="px-2 py-1 bg-ventsafe-navy text-white rounded text-[10px] disabled:opacity-50 transition-colors"
+              >
+                {submitting ? "Saving..." : "Save"}
+              </button>
             </div>
           </div>
         ) : (
@@ -342,16 +382,17 @@ function CommentItem({
         <div className="flex items-center gap-3 mt-1.5">
           <button
             onClick={() => void handleLike()}
-            className={`flex items-center gap-1 text-[10px] font-medium transition-colors ${liked
-              ? "text-ventsafe-navy"
-              : "text-ventsafe-foreground/40 hover:text-ventsafe-navy"
-              }`}
+            className={`flex items-center gap-1 text-[10px] font-medium transition-colors ${
+              liked
+                ? "text-ventsafe-navy"
+                : "text-ventsafe-foreground/40 hover:text-ventsafe-navy"
+            }`}
           >
             <ThumbsUp size={10} className={liked ? "fill-ventsafe-navy" : ""} />
             {likeCount > 0 && likeCount}
           </button>
-          
-          <button 
+
+          <button
             onClick={() => onReply(comment.id, comment.author_name)}
             className="text-[10px] font-medium text-ventsafe-foreground/40 hover:text-ventsafe-navy transition-colors"
           >
@@ -367,7 +408,11 @@ function CommentItem({
 // Counsellor posts show "Motivation" badge — they're sharing encouragement/tips.
 // Student posts show nothing — they're venting.
 
-function PostTypeBadge({ authorRole }: { authorRole: "student" | "counselor" }) {
+function PostTypeBadge({
+  authorRole,
+}: {
+  authorRole: "student" | "counselor";
+}) {
   if (authorRole !== "counselor") return null;
   return (
     <span className="text-[11px] font-semibold text-ventsafe-navy border border-ventsafe-navy rounded-full px-2 py-0.5">
@@ -401,7 +446,10 @@ export function PostCard({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(initialPost.content);
   const [submittingEdit, setSubmittingEdit] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<{ id: string; name: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const [likers, setLikers] = useState<any[]>([]);
   const [showLikers, setShowLikers] = useState(false);
@@ -433,9 +481,7 @@ export function PostCard({
     setPost((p) => ({
       ...p,
       viewer_has_liked: !p.viewer_has_liked,
-      likes_count: p.viewer_has_liked
-        ? p.likes_count - 1
-        : p.likes_count + 1,
+      likes_count: p.viewer_has_liked ? p.likes_count - 1 : p.likes_count + 1,
     }));
 
     // Per flow diagram: like/unlike = same endpoint with 'like' reaction
@@ -471,40 +517,43 @@ export function PostCard({
     }
 
     const res = await apiPost<RepostResult>(`/posts/${post.id}/repost`, token);
-     if (res.success) {
-       setPost((p) => ({
-         ...p,
-         viewer_has_reposted: res.data.reposted,
-         reposts_count: res.data.reposts_count,
-       }));
+    if (res.success) {
+      setPost((p) => ({
+        ...p,
+        viewer_has_reposted: res.data.reposted,
+        reposts_count: res.data.reposts_count,
+      }));
 
-       // If we just UNDID a repost AND this specific card is the repost itself
-       // (identified by having a reposted_by_id), we should remove it from the feed.
-       if (!res.data.reposted && isUndoing) {
-         if (post.reposted_by_id === viewerUserId && onDelete) {
-           onDelete(post.id);
-         }
-       }
+      // If we just UNDID a repost AND this specific card is the repost itself
+      // (identified by having a reposted_by_id), we should remove it from the feed.
+      if (!res.data.reposted && isUndoing) {
+        if (post.reposted_by_id === viewerUserId && onDelete) {
+          onDelete(post.id);
+        }
+      }
 
-       // If they just reposted, notify parent to add to feed
-       if (res.data.reposted && onRepost) {
-         onRepost({
-           ...post,
-           viewer_has_reposted: true,
-           reposts_count: res.data.reposts_count,
-           reposted_by_name: viewerName ?? "You",
-           reposted_by_id: viewerUserId,
-           reposted_at: new Date().toISOString(),
-         });
-       }
-     }
+      // If they just reposted, notify parent to add to feed
+      if (res.data.reposted && onRepost) {
+        onRepost({
+          ...post,
+          viewer_has_reposted: true,
+          reposts_count: res.data.reposts_count,
+          reposted_by_name: viewerName ?? "You",
+          reposted_by_id: viewerUserId,
+          reposted_at: new Date().toISOString(),
+        });
+      }
+    }
   };
 
   // ── Load likers and reposters ─────────────────────────────────────────────
 
   const handleFetchLikers = async () => {
     if (showLikers) return setShowLikers(false);
-    const res = await apiGet<{ likers: any[] }>(`/posts/${post.id}/likes`, token);
+    const res = await apiGet<{ likers: any[] }>(
+      `/posts/${post.id}/likes`,
+      token,
+    );
     if (res.success) {
       setLikers(res.data.likers);
       setShowLikers(true);
@@ -515,7 +564,10 @@ export function PostCard({
 
   const handleFetchReposters = async () => {
     if (showReposters) return setShowReposters(false);
-    const res = await apiGet<{ reposters: any[] }>(`/posts/${post.id}/reposts`, token);
+    const res = await apiGet<{ reposters: any[] }>(
+      `/posts/${post.id}/reposts`,
+      token,
+    );
     if (res.success) {
       setReposters(res.data.reposters);
       setShowReposters(true);
@@ -575,8 +627,8 @@ export function PostCard({
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ content: editContent.trim() }),
-    }).then(r => r.json());
-    
+    }).then((r) => r.json());
+
     if (res.success) {
       setPost((p) => ({ ...p, content: editContent.trim() }));
       setIsEditing(false);
@@ -615,11 +667,19 @@ export function PostCard({
         <div className="flex items-center gap-1.5 px-4 pt-3 pb-2 text-xs text-ventsafe-foreground/60 border-b border-ventsafe-border/30 bg-ventsafe-muted/20">
           <Repeat2 size={13} className="text-ventsafe-navy" />
           <span className="flex items-center gap-1.5">
-            <UserAvatar name={post.reposted_by_name} className="w-4 h-4 text-[8px]" />
+            <UserAvatar
+              name={post.reposted_by_name}
+              className="w-4 h-4 text-[8px]"
+            />
             <span className="font-semibold text-ventsafe-foreground">
-              {post.reposted_by_id === viewerUserId ? "You" : post.reposted_by_name}
+              {post.reposted_by_id === viewerUserId
+                ? "You"
+                : post.reposted_by_name}
             </span>{" "}
-            reposted {post.original_author_name ? `${post.original_author_name}'s vent` : "this"}
+            reposted{" "}
+            {post.original_author_name
+              ? `${post.original_author_name}'s vent`
+              : "this"}
           </span>
         </div>
       )}
@@ -628,7 +688,11 @@ export function PostCard({
         {/* ── Header ── */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5">
-            <UserAvatar name={post.author_name} role={post.author_role} className="w-9 h-9 text-sm" />
+            <UserAvatar
+              name={post.author_name}
+              role={post.author_role}
+              className="w-9 h-9 text-sm"
+            />
             <div>
               <div className="flex items-center gap-1 flex-wrap">
                 <span className="text-sm font-semibold text-ventsafe-foreground">
@@ -673,15 +737,18 @@ export function PostCard({
                   >
                     {isOwn ? (
                       <>
-                        <button
-                          onClick={() => {
-                            setIsEditing(true);
-                            setMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted"
-                        >
-                          <Edit3 size={13} /> Edit post
-                        </button>
+                        {!post.reposted_by_id && (
+                          <button
+                            onClick={() => {
+                              setIsEditing(true);
+                              setMenuOpen(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted"
+                          >
+                            <Edit3 size={13} /> Edit post
+                          </button>
+                        )}
+
                         <button
                           onClick={() => void handleDelete()}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
@@ -720,17 +787,18 @@ export function PostCard({
 
         {/* ── Content ────────────────────────────────────────────────────────── */}
         <div
-          className={`mb-3 ${post.author_role === "counselor"
-            ? "bg-ventsafe-muted/40 rounded-ventsafe-sm px-3 py-2.5 border-l-2 border-ventsafe-navy"
-            : ""
-            }`}
+          className={`mb-3 ${
+            post.author_role === "counselor"
+              ? "bg-ventsafe-muted/40 rounded-ventsafe-sm px-3 py-2.5 border-l-2 border-ventsafe-navy"
+              : ""
+          }`}
         >
           {isEditing ? (
             <div className="flex flex-col gap-2">
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2 text-xs focus:outline-none focus:border-ventsafe-navy resize-none min-h-[80px]"
+                className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2 text-xs focus:outline-none focus:border-ventsafe-navy resize-none min-h-20"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -775,7 +843,10 @@ export function PostCard({
         {/* ── Counts ── */}
         <div className="flex items-center gap-3 text-xs text-ventsafe-foreground/50 mb-3 select-none">
           {post.likes_count > 0 && (
-            <button onClick={() => void handleFetchLikers()} className="hover:text-ventsafe-foreground transition-colors hover:underline">
+            <button
+              onClick={() => void handleFetchLikers()}
+              className="hover:text-ventsafe-foreground transition-colors hover:underline"
+            >
               {post.likes_count} like{post.likes_count !== 1 ? "s" : ""}
             </button>
           )}
@@ -786,7 +857,10 @@ export function PostCard({
             </span>
           )}
           {post.reposts_count > 0 && (
-            <button onClick={() => void handleFetchReposters()} className="hover:text-ventsafe-foreground transition-colors hover:underline">
+            <button
+              onClick={() => void handleFetchReposters()}
+              className="hover:text-ventsafe-foreground transition-colors hover:underline"
+            >
               {post.reposts_count} repost
               {post.reposts_count !== 1 ? "s" : ""}
             </button>
@@ -806,10 +880,11 @@ export function PostCard({
           <button
             onClick={() => void handleLike()}
             disabled={reactingLike}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors flex-1 justify-center ${post.viewer_has_liked
-              ? "text-ventsafe-navy bg-ventsafe-muted"
-              : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
-              }`}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors flex-1 justify-center ${
+              post.viewer_has_liked
+                ? "text-ventsafe-navy bg-ventsafe-muted"
+                : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
+            }`}
           >
             <ThumbsUp
               size={14}
@@ -832,10 +907,11 @@ export function PostCard({
           {/* Repost — everyone */}
           <button
             onClick={() => void handleRepost()}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors flex-1 justify-center ${post.viewer_has_reposted
-              ? "text-green-600 bg-green-50"
-              : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
-              }`}
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-ventsafe-sm transition-colors flex-1 justify-center ${
+              post.viewer_has_reposted
+                ? "text-green-600 bg-green-50"
+                : "text-ventsafe-foreground/60 hover:bg-ventsafe-muted"
+            }`}
           >
             <Repeat2 size={14} />
             {post.viewer_has_reposted ? "Reposted" : "Repost"}
@@ -905,19 +981,65 @@ export function PostCard({
                   </p>
                 ) : (
                   <div>
-                    {comments.map((c) => (
-                      <CommentItem 
-                        key={c.id} 
-                        comment={c} 
-                        token={token} 
-                        viewerUserId={viewerUserId}
-                        onDeleted={(commentId) => {
-                          setComments(prev => prev.filter(x => x.id !== commentId));
-                          setPost(p => ({ ...p, comments_count: Math.max(0, p.comments_count - 1) }));
-                        }}
-                        onReply={(commentId, authorName) => setReplyingTo({ id: commentId, name: authorName })}
-                      />
-                    ))}
+                    {comments
+                      .filter((c) => !c.parent_id)
+                      .map((parent) => (
+                        <div key={parent.id}>
+                          <CommentItem
+                            comment={parent}
+                            token={token}
+                            viewerUserId={viewerUserId}
+                            onDeleted={(commentId) => {
+                              setComments((prev) =>
+                                prev.filter((x) => x.id !== commentId),
+                              );
+                              setPost((p) => ({
+                                ...p,
+                                comments_count: Math.max(
+                                  0,
+                                  p.comments_count - 1,
+                                ),
+                              }));
+                            }}
+                            onReply={(commentId, authorName) =>
+                              setReplyingTo({ id: commentId, name: authorName })
+                            }
+                          />
+                          {/* Nested replies */}
+                          {comments
+                            .filter((c) => c.parent_id === parent.id)
+                            .map((reply) => (
+                              <div
+                                key={reply.id}
+                                className="ml-9 border-l-2 border-ventsafe-border/30 pl-3"
+                              >
+                                <CommentItem
+                                  comment={reply}
+                                  token={token}
+                                  viewerUserId={viewerUserId}
+                                  onDeleted={(commentId) => {
+                                    setComments((prev) =>
+                                      prev.filter((x) => x.id !== commentId),
+                                    );
+                                    setPost((p) => ({
+                                      ...p,
+                                      comments_count: Math.max(
+                                        0,
+                                        p.comments_count - 1,
+                                      ),
+                                    }));
+                                  }}
+                                  onReply={(commentId, authorName) =>
+                                    setReplyingTo({
+                                      id: commentId,
+                                      name: authorName,
+                                    })
+                                  }
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      ))}
                   </div>
                 )}
 
@@ -927,9 +1049,15 @@ export function PostCard({
                     {replyingTo && (
                       <div className="flex items-center justify-between bg-ventsafe-muted/40 px-3 py-1.5 rounded-ventsafe-sm border border-ventsafe-border/50">
                         <span className="text-[10px] text-ventsafe-foreground/60">
-                          Replying to <span className="font-semibold">{replyingTo.name}</span>
+                          Replying to{" "}
+                          <span className="font-semibold">
+                            {replyingTo.name}
+                          </span>
                         </span>
-                        <button onClick={() => setReplyingTo(null)} className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground transition-colors">
+                        <button
+                          onClick={() => setReplyingTo(null)}
+                          className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground transition-colors"
+                        >
                           <X size={12} />
                         </button>
                       </div>
@@ -945,11 +1073,11 @@ export function PostCard({
                           }
                         }}
                         placeholder={
-                          replyingTo 
+                          replyingTo
                             ? "Write a reply..."
                             : viewerRole === "counselor"
-                            ? "Write a reply to support this student..."
-                            : "Write a comment..."
+                              ? "Write a reply to support this student..."
+                              : "Write a comment..."
                         }
                         className="flex-1 border border-ventsafe-border rounded-ventsafe-full px-3 py-1.5 text-xs focus:outline-none focus:border-ventsafe-navy"
                       />
@@ -971,20 +1099,42 @@ export function PostCard({
         {/* ── Likers List ── */}
         <AnimatePresence>
           {showLikers && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
               <div className="pt-3 border-t border-ventsafe-border/30 mt-3 space-y-2">
                 <div className="flex items-center justify-between pb-1">
-                  <h4 className="text-xs font-semibold text-ventsafe-foreground">Liked by</h4>
-                  <button onClick={() => setShowLikers(false)} className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground"><X size={12}/></button>
+                  <h4 className="text-xs font-semibold text-ventsafe-foreground">
+                    Liked by
+                  </h4>
+                  <button
+                    onClick={() => setShowLikers(false)}
+                    className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground"
+                  >
+                    <X size={12} />
+                  </button>
                 </div>
                 {likers.map((u, i) => (
                   <div key={i} className="flex items-center gap-2 py-1.5">
-                    <UserAvatar name={u.anonymous_name} role={u.role} className="w-6 h-6 text-[10px]" />
-                    <span className="text-xs font-medium">{u.anonymous_name}</span>
+                    <UserAvatar
+                      name={u.anonymous_name}
+                      role={u.role}
+                      className="w-6 h-6 text-[10px]"
+                    />
+                    <span className="text-xs font-medium">
+                      {u.anonymous_name}
+                    </span>
                     <AuthorBadge role={u.role} tier={u.tier} />
                   </div>
                 ))}
-                {likers.length === 0 && <p className="text-xs text-ventsafe-foreground/50 py-2">No one has liked this yet.</p>}
+                {likers.length === 0 && (
+                  <p className="text-xs text-ventsafe-foreground/50 py-2">
+                    No one has liked this yet.
+                  </p>
+                )}
               </div>
             </motion.div>
           )}
@@ -993,20 +1143,42 @@ export function PostCard({
         {/* ── Reposters List ── */}
         <AnimatePresence>
           {showReposters && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
               <div className="pt-3 border-t border-ventsafe-border/30 mt-3 space-y-2">
                 <div className="flex items-center justify-between pb-1">
-                  <h4 className="text-xs font-semibold text-ventsafe-foreground">Reposted by</h4>
-                  <button onClick={() => setShowReposters(false)} className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground"><X size={12}/></button>
+                  <h4 className="text-xs font-semibold text-ventsafe-foreground">
+                    Reposted by
+                  </h4>
+                  <button
+                    onClick={() => setShowReposters(false)}
+                    className="text-ventsafe-foreground/40 hover:text-ventsafe-foreground"
+                  >
+                    <X size={12} />
+                  </button>
                 </div>
                 {reposters.map((u, i) => (
                   <div key={i} className="flex items-center gap-2 py-1.5">
-                    <UserAvatar name={u.anonymous_name} role={u.role} className="w-6 h-6 text-[10px]" />
-                    <span className="text-xs font-medium">{u.anonymous_name}</span>
+                    <UserAvatar
+                      name={u.anonymous_name}
+                      role={u.role}
+                      className="w-6 h-6 text-[10px]"
+                    />
+                    <span className="text-xs font-medium">
+                      {u.anonymous_name}
+                    </span>
                     <AuthorBadge role={u.role} tier={u.tier} />
                   </div>
                 ))}
-                {reposters.length === 0 && <p className="text-xs text-ventsafe-foreground/50 py-2">No one has reposted this yet.</p>}
+                {reposters.length === 0 && (
+                  <p className="text-xs text-ventsafe-foreground/50 py-2">
+                    No one has reposted this yet.
+                  </p>
+                )}
               </div>
             </motion.div>
           )}
