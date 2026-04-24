@@ -115,6 +115,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   health_concerns: "Health Concerns",
   career_anxiety: "Career Anxiety",
   loneliness: "Loneliness",
+  counsellor_tip: "Professional Tip",
 };
 
 // ─── Permission helpers ───────────────────────────────────────────────────────
@@ -405,14 +406,23 @@ function CommentItem({
 }
 
 // ─── Post type badge ──────────────────────────────────────────────────────────
-// Counsellor posts show "Motivation" badge — they're sharing encouragement/tips.
+// Counsellor posts show "Motivation" badge — th_____ey're sharing encouragement/tips.
 // Student posts show nothing — they're venting.
 
 function PostTypeBadge({
   authorRole,
+  category,
 }: {
   authorRole: "student" | "counselor";
+  category?: string;
 }) {
+  if (category === "counsellor_tip") {
+    return (
+      <span className="text-[11px] font-bold text-amber-600 border border-amber-600 bg-amber-50 rounded-full px-2.5 py-0.5 animate-pulse shadow-sm shadow-amber-100">
+        Professional Tip
+      </span>
+    );
+  }
   if (authorRole !== "counselor") return null;
   return (
     <span className="text-[11px] font-semibold text-ventsafe-navy border border-ventsafe-navy rounded-full px-2 py-0.5">
@@ -713,7 +723,7 @@ export function PostCard({
 
           <div className="flex items-center gap-1.5 shrink-0">
             {/* Post type badge: "Motivation" for counsellors, nothing for students */}
-            <PostTypeBadge authorRole={post.author_role} />
+            <PostTypeBadge authorRole={post.author_role} category={post.category} />
 
             {/* Three-dot menu */}
             <div className="relative">

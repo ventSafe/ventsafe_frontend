@@ -28,7 +28,7 @@ import { LogoutModal } from "@/components/shared/LogoutModal";
 const NAV_LINKS = [
   { href: "/vent-space", label: "Home", icon: <Home size={16} /> },
   { href: "/resources", label: "Resource", icon: <BookOpen size={16} /> },
-  { href: "/vent", label: "Vent", icon: <MessageCircle size={16} /> },
+  { href: "/chat", label: "Vent", icon: <MessageCircle size={16} /> },
 ];
 
 // ─── Role Badge ───────────────────────────────────────────────────────────────
