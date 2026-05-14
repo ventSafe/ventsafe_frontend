@@ -180,6 +180,8 @@ export interface LoginResponseData extends User {
 export interface SignupFormData {
   gender: "male" | "female";
   agreeToTerms: boolean;
+  publicKey: string;
+  role?: string;
 }
 
 export interface LoginFormData {

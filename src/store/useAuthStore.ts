@@ -112,9 +112,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
           const retryData = await retry.json();
           const user: User = retryData.data?.user ?? retryData.data;
-          if (user?.anonymousName) {
-            localStorage.setItem("ventsafe-anon-name", user.anonymousName);
-          }
           set({ user, isAuthenticated: true });
           return true;
         }
@@ -123,9 +120,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
         const data = await res.json();
         const user: User = data.data?.user ?? data.data;
-        if (user?.anonymousName) {
-          localStorage.setItem("ventsafe-anon-name", user.anonymousName);
-        }
         set({ user, isAuthenticated: true });
         return true;
       } catch {

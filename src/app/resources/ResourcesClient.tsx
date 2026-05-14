@@ -15,6 +15,7 @@ import {
   X,
   BarChart2,
   BookOpen,
+  AlertTriangle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -420,6 +421,11 @@ function ResourceCard({
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-ventsafe-muted text-ventsafe-foreground/60 capitalize">
                 {resource.category}
               </span>
+              {(resource.category === "crisis" || /(sensitive|adult|nsfw|trigger warning|tw:)/i.test(resource.title) || /(sensitive|adult|nsfw|trigger warning|tw:)/i.test(resource.content)) && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold border border-red-200 flex items-center gap-1">
+                  <AlertTriangle size={10} /> Sensitive Content
+                </span>
+              )}
               <span className="text-[11px] text-ventsafe-foreground/40">
                 {formatDistanceToNow(new Date(resource.created_at), {
                   addSuffix: true,

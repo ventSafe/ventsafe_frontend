@@ -187,17 +187,6 @@ export default function VentSpacePage() {
               </div>
             </div>
 
-        
-            <MoodSection token={token} viewerRole={viewerRole} />
-
-            {/* ── Available Users (Point 2) ──
-                Students: see available counsellors + follow button
-                Counsellors: see active students + chat button (no follow)
-            ── */}
-            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
-              <AvailableUsers token={token} viewerRole={viewerRole} />
-            </div>
-
             {/* ── Feed ── */}
             {loading ? (
               <div className="space-y-4">
@@ -282,7 +271,13 @@ export default function VentSpacePage() {
           </div>
 
           {/* ── RIGHT COLUMN ─────────────────────────────────────────────── */}
-          <div className="hidden lg:block space-y-4">
+          <div className="space-y-4">
+
+            {/* ── How Are You Today + Available Users ── */}
+            <MoodSection token={token} viewerRole={viewerRole} />
+            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+              <AvailableUsers token={token} viewerRole={viewerRole} />
+            </div>
 
             {/* ── Quick Resources (Point 4) ── */}
             <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
@@ -366,6 +361,7 @@ export default function VentSpacePage() {
         onClose={() => setModalOpen(false)}
         token={token}
         authorName={anonymousName}
+        viewerRole={viewerRole}
         onPosted={handlePosted}
       />
     </AppLayout>

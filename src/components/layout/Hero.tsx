@@ -27,25 +27,75 @@ const ventOptions = [
 ];
 
 export function Hero() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isInitialized } = useAuth();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+    const hasAccount =
+      localStorage.getItem("ventsafe-signup-public-key") ||
+      localStorage.getItem("ventsafe-counsellor-public-key");
+    if (hasAccount) {
+      setIsLoginMode(true);
+    }
   }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
+        // Reset to appropriate mode when closed
+        const hasAccount =
+          localStorage.getItem("ventsafe-signup-public-key") ||
+          localStorage.getItem("ventsafe-counsellor-public-key");
+        setTimeout(() => setIsLoginMode(!!hasAccount), 200);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const currentOptions = isLoginMode
+    ? [
+        {
+          href: "/login",
+          label: "Log in as Student",
+          description: "Use your anonymous key pair to access your account",
+          Icon: GraduationCap,
+          badge: "Student",
+          badgeColor: "bg-blue-100 text-blue-700",
+        },
+        {
+          href: "/login/counsellor",
+          label: "Log in as Counsellor",
+          description: "Access your verified counsellor account",
+          Icon: Stethoscope,
+          badge: "Counsellor",
+          badgeColor: "bg-emerald-100 text-emerald-700",
+        },
+      ]
+    : [
+        {
+          href: "/signup",
+          label: "Sign up as Student",
+          description: "Anonymous key pair — no name or email needed",
+          Icon: GraduationCap,
+          badge: "Student",
+          badgeColor: "bg-blue-100 text-blue-700",
+        },
+        {
+          href: "/signup/counsellor",
+          label: "Sign up as Counsellor",
+          description: "Verified counsellor — anonymous but trusted",
+          Icon: Stethoscope,
+          badge: "Counsellor",
+          badgeColor: "bg-emerald-100 text-emerald-700",
+        },
+      ];
 
   return (
     <section className="min-h-screen flex items-center justify-center pt-42 pb-16 px-6">
@@ -68,8 +118,15 @@ export function Hero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              {/* Vent Now — dropdown */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 min-h-[44px] w-full max-w-[280px] sm:max-w-none">
+              {!mounted || !isInitialized ? (
+                <div className="flex items-center gap-2 text-ventsafe-foreground/50 h-[36px]">
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium">Loading...</span>
+                </div>
+              ) : (
+                <>
+                  {/* Vent Now — dropdown */}
               <div className="relative w-full sm:w-auto" ref={menuRef}>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
@@ -99,63 +156,67 @@ export function Hero() {
                       className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-72 bg-white border border-ventsafe-border rounded-2xl shadow-xl shadow-ventsafe-foreground/10 overflow-hidden z-50"
                     >
                       <div className="p-2">
-                        {ventOptions.map(
-                          (
-                            {
-                              href,
-                              label,
-                              description,
-                              Icon,
-                              badge,
-                              badgeColor,
-                            },
-                            i,
-                          ) => (
-                            <motion.button
-                              key={href}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: i * 0.06 }}
-                              onClick={() => {
-                                setOpen(false);
-                                router.push(href);
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-ventsafe-background transition-colors cursor-pointer text-left"
-                            >
-                              <div className="w-10 h-10 rounded-xl bg-ventsafe-foreground/8 flex items-center justify-center shrink-0">
-                                <Icon className="w-5 h-5 text-ventsafe-foreground" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <span className="text-sm font-semibold text-ventsafe-foreground">
-                                    {label}
-                                  </span>
-                                  <span
-                                    className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${badgeColor}`}
-                                  >
-                                    {badge}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-ventsafe-foreground/50 truncate">
-                                  {description}
-                                </p>
-                              </div>
-                            </motion.button>
-                          ),
-                        )}
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={isLoginMode ? "login" : "signup"}
+                            initial={{ opacity: 0, x: isLoginMode ? 10 : -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: isLoginMode ? -10 : 10 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {currentOptions.map(
+                              (
+                                {
+                                  href,
+                                  label,
+                                  description,
+                                  Icon,
+                                  badge,
+                                  badgeColor,
+                                },
+                                i,
+                              ) => (
+                                <button
+                                  key={href}
+                                  onClick={() => {
+                                    setOpen(false);
+                                    router.push(href);
+                                  }}
+                                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-ventsafe-background transition-colors cursor-pointer text-left"
+                                >
+                                  <div className="w-10 h-10 rounded-xl bg-ventsafe-foreground/8 flex items-center justify-center shrink-0">
+                                    <Icon className="w-5 h-5 text-ventsafe-foreground" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                      <span className="text-sm font-semibold text-ventsafe-foreground">
+                                        {label}
+                                      </span>
+                                      <span
+                                        className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${badgeColor}`}
+                                      >
+                                        {badge}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-ventsafe-foreground/50 truncate">
+                                      {description}
+                                    </p>
+                                  </div>
+                                </button>
+                              ),
+                            )}
+                          </motion.div>
+                        </AnimatePresence>
                       </div>
 
                       <div className="border-t border-ventsafe-border/50 px-4 py-2.5">
                         <p className="text-xs text-ventsafe-foreground/40 text-center">
-                          Already have keys?{" "}
+                          {isLoginMode ? "Don't have keys? " : "Already have keys? "}
                           <button
-                            onClick={() => {
-                              setOpen(false);
-                              router.push("/login");
-                            }}
+                            onClick={() => setIsLoginMode(!isLoginMode)}
                             className="text-ventsafe-foreground/70 hover:text-ventsafe-foreground underline cursor-pointer"
                           >
-                            Log in here
+                            {isLoginMode ? "Sign up here" : "Log in here"}
                           </button>
                         </p>
                       </div>
@@ -174,6 +235,8 @@ export function Hero() {
               >
                 {mounted && isAuthenticated ? "Continue to Platform" : "Vent As Guest"}
               </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -183,6 +246,7 @@ export function Hero() {
             alt="Illustration Image"
             width={340}
             height={411}
+            className="w-[280px] sm:w-[340px] h-auto"
           />
         </div>
       </div>

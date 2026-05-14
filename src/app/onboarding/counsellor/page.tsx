@@ -299,14 +299,14 @@ export default function CounsellorOnboardingPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-bold text-ventsafe-foreground">Volunteer Counsellor</h3>
                           <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                            Student
+                            Professional Volunteer Tier
                           </span>
                         </div>
                         <p className="text-sm text-ventsafe-foreground/60 mb-3">
-                          A fellow student who has completed mental health first aid training and wants to support peers.
+                          A professional counsellor who volunteers their time to support students at no cost. Open to all qualified counsellors.
                         </p>
                         <ul className="space-y-1">
-                          {["University student", "Mental health first aid certificate", "Written statement of intent"].map((req) => (
+                          {["Open to all professional counsellors", "Students chat for free", "Share resources with followers"].map((req) => (
                             <li key={req} className="flex items-center gap-1.5 text-xs text-ventsafe-foreground/70">
                               <Check className="w-3 h-3 text-ventsafe-foreground" />
                               {req}
@@ -326,59 +326,41 @@ export default function CounsellorOnboardingPage() {
                     </div>
                   </motion.button>
 
-                  {/* Professional card */}
-                  <motion.button
+                  {/* Professional card — Coming Soon (V2) */}
+                  <motion.div
                     variants={itemVariants}
-                    whileHover={{ scale: 1.015, y: -2 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => setTier("professional")}
-                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                      tier === "professional"
-                        ? "border-ventsafe-foreground bg-ventsafe-foreground/8 shadow-lg shadow-ventsafe-foreground/10"
-                        : "border-ventsafe-foreground/15 bg-white hover:border-ventsafe-foreground/40"
-                    }`}
+                    className="relative w-full p-5 rounded-2xl border-2 border-ventsafe-foreground/10 bg-ventsafe-foreground/3 text-left opacity-60 cursor-not-allowed overflow-hidden"
                   >
+                    {/* Coming Soon ribbon */}
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-amber-100 border border-amber-300 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wide uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      Coming Soon — V2
+                    </div>
                     <div className="flex items-start gap-4">
-                      <motion.div
-                        animate={{
-                          backgroundColor: tier === "professional" ? "#000562" : "#EFF0FF",
-                        }}
-                        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                      >
-                        <Stethoscope
-                          className={`w-6 h-6 ${tier === "professional" ? "text-white" : "text-ventsafe-foreground"}`}
-                        />
-                      </motion.div>
-                      <div className="flex-1">
+                      <div className="w-12 h-12 rounded-xl bg-ventsafe-foreground/8 flex items-center justify-center shrink-0">
+                        <Stethoscope className="w-6 h-6 text-ventsafe-foreground/40" />
+                      </div>
+                      <div className="flex-1 pr-20">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-ventsafe-foreground">Professional Counsellor</h3>
-                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                            Certified
+                          <h3 className="font-bold text-ventsafe-foreground">Professional Tier</h3>
+                          <span className="text-xs bg-ventsafe-foreground/8 text-ventsafe-foreground/50 px-2 py-0.5 rounded-full font-medium">
+                            Paid
                           </span>
                         </div>
-                        <p className="text-sm text-ventsafe-foreground/60 mb-3">
-                          A licensed mental health professional (MDCN or equivalent Nigerian body) with verified credentials.
+                        <p className="text-sm text-ventsafe-foreground/50 mb-3">
+                          A licensed mental health professional with a high-standard certificate, submitted CV, and 7+ years of professional experience.
                         </p>
                         <ul className="space-y-1">
-                          {["Valid mental health license", "MDCN / NLNG registration", "Professional certificate upload"].map((req) => (
-                            <li key={req} className="flex items-center gap-1.5 text-xs text-ventsafe-foreground/70">
-                              <Check className="w-3 h-3 text-ventsafe-foreground" />
+                          {["Professional certificate (verified)", "Submitted CV required", "7+ years of experience", "Revenue share per session"].map((req) => (
+                            <li key={req} className="flex items-center gap-1.5 text-xs text-ventsafe-foreground/40">
+                              <Check className="w-3 h-3 text-ventsafe-foreground/30" />
                               {req}
                             </li>
                           ))}
                         </ul>
                       </div>
-                      {tier === "professional" && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        >
-                          <Check className="w-5 h-5 text-ventsafe-foreground" />
-                        </motion.div>
-                      )}
                     </div>
-                  </motion.button>
+                  </motion.div>
 
                   {errors.tier && (
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-sm text-center">

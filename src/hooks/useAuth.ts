@@ -28,15 +28,14 @@ export function useAuth() {
     clearAuth,
   } = useAuthStore();
 
-  // Gender — from user object first, then localStorage fallbacks
-  // safeLS returns null on server, so this is always safe
+  // Gender — from Zustand user object first, then localStorage fallbacks
   const gender = (user?.gender ??
     safeLS(STORAGE_KEYS.GENDER) ??
     safeLS("ventsafe-signup-gender") ??
     safeLS("ventsafe-counsellor-gender") ??
     "male") as "male" | "female";
 
-  // Anonymous name — from user object first, then localStorage fallbacks
+  // Anonymous name — from Zustand user object first (set by /auth/me), then localStorage
   const anonymousName =
     user?.anonymousName ??
     safeLS("ventsafe-anon-name") ??

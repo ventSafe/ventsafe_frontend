@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { SanctuaryUI } from "@/components/chat/SanctuaryUI";
 import { ClinicUI } from "@/components/chat/ClinicUI";
 import { useEffect, useState } from "react";
-import { PanicButton } from "@/components/shared/PanicButton";
-import { ManiLifebuoy } from "@/components/shared/ManiLifebuoy";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function ChatPage() {
   const { user } = useAuth();
@@ -19,22 +19,15 @@ export default function ChatPage() {
 
   const isCounsellor = user?.role === "counselor";
 
-  const handlePanic = () => {
-    // Clear potentially sensitive states locally
-    console.log("Panic triggered! Wiping chat state");
-  };
-
   return (
     <>
+
+
       <main className="min-h-screen">
         {isCounsellor ? (
           <ClinicUI />
         ) : (
-          <>
-            <SanctuaryUI />
-            <PanicButton onTrigger={handlePanic} />
-            <ManiLifebuoy />
-          </>
+          <SanctuaryUI />
         )}
       </main>
     </>

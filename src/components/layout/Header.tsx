@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, Stethoscope, ChevronDown, User, LogOut } from "lucide-react";
+import { GraduationCap, Stethoscope, ChevronDown, User, LogOut, Menu, X } from "lucide-react";
 import { Logo } from "../shared/Logo";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,25 +19,6 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-];
-
-const ventOptions = [
-  {
-    href: "/signup",
-    label: "Sign up as Student",
-    description: "Anonymous key pair — no name or email needed",
-    Icon: GraduationCap,
-    badge: "Student",
-    badgeColor: "bg-blue-100 text-blue-700",
-  },
-  {
-    href: "/signup/counsellor",
-    label: "Sign up as Counsellor",
-    description: "Verified counsellor — anonymous but trusted",
-    Icon: Stethoscope,
-    badge: "Counsellor",
-    badgeColor: "bg-emerald-100 text-emerald-700",
-  },
 ];
 
 function RoleBadge({ role }: { role: string }) {
@@ -72,22 +53,35 @@ function RoleBadge({ role }: { role: string }) {
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, user, anonymousName, logout } = useAuth();
+  const { isAuthenticated, user, anonymousName, logout, isInitialized } = useAuth();
+  
   const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  
   const [mounted, setMounted] = useState(false);
   const [hasStudentAccount, setHasStudentAccount] = useState(false);
   const [hasCounsellorAccount, setHasCounsellorAccount] = useState(false);
+  
   const menuRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -97,6 +91,8 @@ export function Header() {
   // Close on route change
   useEffect(() => {
     setOpen(false);
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
   }, [pathname]);
 
   // Check for existing accounts
@@ -142,12 +138,12 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-ventsafe-background/60 backdrop-blur-md border-b border-ventsafe-border/10">
-      <div className="container mx-auto px-6 py-2.5">
+      <div className="container mx-auto px-4 sm:px-6 py-2.5">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Logo />
 
-          {/* Navigation */}
+          {/* Navigation (Desktop) */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -169,37 +165,101 @@ export function Header() {
           </nav>
 
           {/* Auth Section */}
-          <div className="flex items-center gap-4">
-            {mounted && isAuthenticated ? (
+          <div className="flex items-center gap-4 min-h-[36px]">
+            {!mounted || !isInitialized ? (
+              <div className="flex items-center justify-center px-4">
+                <div className="w-4 h-4 border-2 border-ventsafe-foreground/30 border-t-ventsafe-foreground rounded-full animate-spin" />
+              </div>
+            ) : isAuthenticated ? (
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 pr-2 border-r border-ventsafe-border/30">
-                  {/* Avatar & Info */}
-                  <UserAvatar name={anonymousName} role={user?.role} className="w-8 h-8 text-xs" />
-                  <div className="hidden lg:flex flex-col items-start leading-tight">
-                    <span className="text-xs font-bold text-ventsafe-foreground truncate max-w-[100px]">
-                      {anonymousName}
-                    </span>
-                    <RoleBadge role={user?.role || "student"} />
+                {/* Desktop User Info & Actions */}
+                <div className="hidden md:flex items-center gap-4">
+                  <div className="flex items-center gap-3 pr-2 border-r border-ventsafe-border/30">
+                    <UserAvatar name={anonymousName} role={user?.role} className="w-8 h-8 text-xs" />
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="text-xs font-bold text-ventsafe-foreground truncate max-w-[100px]">
+                        {anonymousName}
+                      </span>
+                      <RoleBadge role={user?.role || "student"} />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={dashboardHref}
+                      className="bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity"
+                    >
+                      Go to Platform
+                    </Link>
+                    <button
+                      onClick={logout}
+                      title="Logout"
+                      className="p-1.5 text-ventsafe-foreground/40 hover:text-red-500 transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={dashboardHref}
-                    className="bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity"
-                  >
-                    Go to Platform
-                  </Link>
+                {/* Mobile User Dropdown */}
+                <div className="md:hidden relative" ref={userDropdownRef}>
                   <button
-                    onClick={logout}
-                    title="Logout"
-                    className="p-1.5 text-ventsafe-foreground/40 hover:text-red-500 transition-colors cursor-pointer"
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border border-ventsafe-border bg-white hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <UserAvatar name={anonymousName} role={user?.role} className="w-8 h-8 text-xs" />
+                    <span className="text-sm font-semibold text-ventsafe-foreground max-w-[80px] truncate">
+                      {anonymousName}
+                    </span>
+                    <motion.div animate={{ rotate: userDropdownOpen ? 180 : 0 }}>
+                      <ChevronDown size={13} className="text-ventsafe-foreground/50" />
+                    </motion.div>
                   </button>
+
+                  <AnimatePresence>
+                    {userDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                        className="absolute right-0 top-full mt-2 w-56 bg-white border border-ventsafe-border rounded-xl shadow-lg overflow-hidden z-50"
+                      >
+                        <div className="py-1 border-b border-ventsafe-border/50">
+                          {navLinks.map((link) => (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={() => setUserDropdownOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted transition-colors"
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="py-1">
+                          <Link
+                            href={dashboardHref}
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-ventsafe-navy font-semibold hover:bg-ventsafe-muted transition-colors"
+                          >
+                            Go to Platform
+                          </Link>
+                        </div>
+                        <div className="border-t border-ventsafe-border/50 py-1">
+                          <button
+                            onClick={logout}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut size={15} />
+                            Log out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Switch Account Logic */}
+                {/* Switch Account Logic (Desktop only) */}
                 {user?.role === "student" && hasCounsellorAccount && (
                   <button
                     onClick={() => handleSwitchAccount("counselor")}
@@ -221,13 +281,14 @@ export function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-4">
+                {/* Desktop Sign Up / Log In */}
                 <Link
                   href="/login"
-                  className="text-ventsafe-btn-sm font-medium text-ventsafe-foreground/60 hover:text-ventsafe-foreground transition-colors"
+                  className="hidden md:block text-ventsafe-btn-sm font-medium text-ventsafe-foreground/60 hover:text-ventsafe-foreground transition-colors"
                 >
                   Log in
                 </Link>
-                <div className="relative" ref={menuRef}>
+                <div className="hidden md:block relative" ref={menuRef}>
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setOpen((v) => !v)}
@@ -266,6 +327,56 @@ export function Header() {
                             </div>
                             {hasCounsellorAccount && <span className="text-[10px] text-ventsafe-foreground/50 ml-6">Saved account detected</span>}
                           </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Mobile Hamburger Menu (Logged out) */}
+                <div className="md:hidden relative" ref={mobileMenuRef}>
+                  <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="p-2 text-ventsafe-foreground hover:bg-ventsafe-muted rounded-full transition-colors"
+                  >
+                    {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                  </button>
+
+                  <AnimatePresence>
+                    {mobileMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                        className="absolute right-0 top-full mt-2 w-56 bg-white border border-ventsafe-border rounded-xl shadow-lg overflow-hidden z-50"
+                      >
+                        <div className="py-1 border-b border-ventsafe-border/50">
+                          {navLinks.map((link) => (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="block px-4 py-2.5 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted transition-colors"
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </div>
+                        <div className="p-3 flex flex-col gap-2">
+                          <Link 
+                            href="/login" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="w-full py-2 text-center text-sm font-medium text-ventsafe-foreground border border-ventsafe-border rounded-lg"
+                          >
+                            Log In
+                          </Link>
+                          <Link 
+                            href="/signup" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="w-full py-2 text-center text-sm font-medium bg-ventsafe-foreground text-white rounded-lg"
+                          >
+                            Sign Up
+                          </Link>
                         </div>
                       </motion.div>
                     )}

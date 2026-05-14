@@ -6,8 +6,28 @@
 
 import { BlockchainIdentity } from "@/types";
 import { STORAGE_KEYS } from "@/config/constants";
+import { ethers } from "ethers";
 
 // ─── AES-256 Encryption via Web Crypto API ────────────────────────────────────
+
+/**
+ * Generates a 12-word BIP39 seed phrase.
+ */
+export function generateSeedPhrase(): string {
+  return ethers.Wallet.createRandom().mnemonic!.phrase;
+}
+
+/**
+ * Derives a deterministic secp256k1 Key Pair using the 12-word phrase and a PIN/passphrase as salt.
+ */
+export function deriveKeysFromSeedPhrase(phrase: string, pin: string) {
+  const hdNode = ethers.HDNodeWallet.fromPhrase(phrase, pin);
+  return {
+    publicKey: hdNode.publicKey,
+    privateKey: hdNode.privateKey,
+    address: hdNode.address
+  };
+}
 
 /**
  * Derives a 256-bit AES key from a PIN using PBKDF2.
@@ -127,12 +147,10 @@ export function formatKeyPreview(key: string, chars = 6): string {
   return `${clean.slice(0, chars)}...${clean.slice(-chars)}`;
 }
 
-export function isValidPEMFormat(pem: string, type: "public" | "private"): boolean {
-  const label = type === "public" ? "PUBLIC KEY" : "PRIVATE KEY";
-  return (
-    pem.includes(`-----BEGIN ${label}-----`) &&
-    pem.includes(`-----END ${label}-----`)
-  );
+export function isValidPEMFormat(key: string, type: "public" | "private"): boolean {
+  // We now use secp256k1 hex strings instead of PEM
+  if (type === "public") return key.startsWith("0x") && key.length >= 66;
+  return key.startsWith("0x") && key.length === 66;
 }
 
 export function downloadKey(keyContent: string, filename = "ventsafe-private-key.txt"): void {

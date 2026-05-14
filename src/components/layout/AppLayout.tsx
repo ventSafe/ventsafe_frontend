@@ -24,6 +24,8 @@ import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Logo } from "@/components/shared/Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/shared/LogoutModal";
+import { ManiLifebuoy } from "@/components/shared/ManiLifebuoy";
+import { PanicButton } from "@/components/shared/PanicButton";
 
 const NAV_LINKS = [
   { href: "/vent-space", label: "Home", icon: <Home size={16} /> },
@@ -125,8 +127,8 @@ function RoleSwitchModal({
                 // They have counsellor keys → log in to their existing counsellor account
                 <Link
                   href="/login/counsellor"
-                  onClick={onClose}
-                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group"
+                  onClick={() => { if (typeof window !== 'undefined') { localStorage.removeItem('ventsafe-auth-token'); } onClose(); }}
+                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group cursor-pointer"
                 >
                   <div className="w-9 h-9 rounded-full bg-ventsafe-navy text-white flex items-center justify-center shrink-0">
                     <ShieldCheck size={16} />
@@ -178,8 +180,8 @@ function RoleSwitchModal({
                 // They have separate student keys → log in to their student account
                 <Link
                   href="/login"
-                  onClick={onClose}
-                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group"
+                  onClick={() => { if (typeof window !== 'undefined') { localStorage.removeItem('ventsafe-auth-token'); } onClose(); }}
+                  className="flex items-center gap-3 p-4 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors group cursor-pointer"
                 >
                   <div className="w-9 h-9 rounded-full bg-ventsafe-muted text-ventsafe-navy flex items-center justify-center shrink-0">
                     <GraduationCap size={16} />
@@ -437,7 +439,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            {/* Badge reads from Zustand user.role — always correct */}
+            {/* Online/Offline indicator */}
+            <div className="flex items-center gap-1.5" title={user?.isOnline ? 'Online' : 'Offline'}>
+              <div className={`w-2 h-2 rounded-full ${user?.isOnline !== false ? 'bg-green-500' : 'bg-gray-300'}`} />
+              <span className="text-[10px] font-medium text-ventsafe-foreground/50 hidden sm:inline">
+                {user?.isOnline !== false ? 'Online' : 'Offline'}
+              </span>
+            </div>
+
+            {/* MANI link + Panic/Esc button (Students only) */}
+            {userRole === "student" && (
+              <>
+                <ManiLifebuoy />
+                <PanicButton onTrigger={() => {}} inline />
+              </>
+            )}
+
+            {/* Role badge */}
             <RoleBadge
               role={userRole}
               onSwitchRole={handleSwitchRoleClick}
@@ -489,6 +507,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
 
                     <div className="py-1">
+                      {/* Main nav links for mobile only */}
+                      <div className="sm:hidden border-b border-ventsafe-border/50 pb-1 mb-1">
+                        {NAV_LINKS.map((link) => {
+                          const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+                          return (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={() => setDropdownOpen(false)}
+                              className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                                isActive ? "text-ventsafe-navy bg-ventsafe-muted/50" : "text-ventsafe-foreground hover:bg-ventsafe-muted"
+                              }`}
+                            >
+                              <span className={isActive ? "text-ventsafe-navy" : "text-ventsafe-foreground/50"}>
+                                {link.icon}
+                              </span>
+                              {link.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+
                       {DROPDOWN_ITEMS.map((item) =>
                         item.href ? (
                           <Link
@@ -539,8 +579,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <LogoutModal
         isOpen={showLogoutModal}
         currentName={anonymousName}
-        gender={user?.gender ?? "male"}
-        mode="logout"
         onConfirm={handleLogout}
         onCancel={() => setShowLogoutModal(false)}
       />

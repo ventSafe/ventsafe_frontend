@@ -4,16 +4,18 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useChatStore } from "@/store/chatStore";
+import { useChatStore, type MessageStatus } from "@/store/chatStore";
 import { initializeSocket, getSocket } from "@/lib/socket";
 import { GradientOrb } from "@/components/shared/GradientOrb";
 import {
   MessageSquare, Compass, Users, Lock, X, ShieldCheck,
   HelpCircle, ChevronRight, CheckCircle, ArrowLeft, Send,
+  Check,
 } from "lucide-react";
-import { encryptMessage } from "@/lib/crypto/e2ee";
+import { encryptMessage, decryptMessage } from "@/lib/crypto/e2ee";
 import { decryptPrivateKey } from "@/lib/blockchain/keys";
 import { API_BASE_URL } from "@/config/constants";
+import { useVaultStore } from "@/store/useVaultStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,11 +38,17 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
   const refs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
   const handleDigit = (i: number, val: string) => {
-    if (!/^\d*$/.test(val)) return;
+    if (!val) { const next = [...pin]; next[i] = ""; setPin(next); return; }
+    const digits = val.replace(/\D/g, "");
+    if (!digits) return;
     const next = [...pin];
-    next[i] = val.slice(-1);
+    if (digits.length > 1) {
+      for (let j = 0; j < digits.length && i + j < 4; j++) next[i + j] = digits[j];
+      setPin(next); refs[Math.min(i + digits.length, 3)].current?.focus(); return;
+    }
+    next[i] = digits.slice(-1);
     setPin(next);
-    if (val && i < 3) refs[i + 1].current?.focus();
+    if (i < 3) refs[i + 1].current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, i: number) => {
@@ -167,71 +175,264 @@ function TierBadge({ tier }: { tier: string | null }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+// ─── Message Status Indicator ────────────────────────────────────────────────
+function MessageStatusIcon({ status }: { status?: MessageStatus }) {
+  if (!status || status === "sending") {
+    return <span className="text-[9px] text-slate-500 ml-1 opacity-60 flex items-center">⏳</span>;
+  }
+  if (status === "failed") {
+    return <span className="text-[9px] text-red-400 ml-1 flex items-center">✗ Failed</span>;
+  }
+  if (status === "delivered") {
+    return (
+      <span className="text-[9px] text-cyan-400 ml-1 flex items-center gap-0.5 inline-flex">
+        <Check size={10} strokeWidth={3} /><Check size={10} strokeWidth={3} className="-ml-1.5" />
+      </span>
+    );
+  }
+  // sent
+  return (
+    <span className="text-[9px] text-slate-400 ml-1 flex items-center">
+      <Check size={10} strokeWidth={3} />
+    </span>
+  );
+}
+
 export function SanctuaryUI() {
   const router = useRouter();
   const { user, token, anonymousName } = useAuth();
-  const { activeSessionId, sessions, messages, isTyping, setActiveSession, setSessions } = useChatStore();
+  const { activeSessionId, sessions, messages, isTyping, setActiveSession, setSessions, setMessages, addOptimisticMessage, updateMessageStatus, setMessagePlaintext } = useChatStore();
   const [panel, setPanel] = useState<SidePanel>("chats");
   const [inputText, setInputText] = useState("");
   const [showVault, setShowVault] = useState(false);
-  const [unlockedPrivKey, setUnlockedPrivKey] = useState<string | null>(null);
+  // ── Vault key from in-memory Zustand store (survives client nav, wiped on page reload) ──
+  const { unlockedPrivKey, unlock: unlockVault } = useVaultStore();
   const [followedCounsellors, setFollowedCounsellors] = useState<FollowedCounsellor[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [socketReady, setSocketReady] = useState(false);
 
-  // Init socket
-  useEffect(() => { initializeSocket(); }, []);
+  const handleSessionClick = async (s: any) => {
+    if (s.target_user_id) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/chat/sessions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ targetUserId: s.target_user_id })
+        });
+        const data = await res.json();
+        if (data.session) {
+          const sessionId = data.session.id;
+          setSessions(useChatStore.getState().sessions.map((sess: any) => 
+            sess.id === s.id ? { ...sess, id: sessionId, target_user_id: undefined } : sess
+          ));
+          setActiveSession(sessionId);
+        }
+      } catch (err) {
+        console.error("Failed to init session", err);
+      }
+    } else {
+      setActiveSession(s.id);
+    }
+  };
+
+  // Init socket — retry if token wasn't available on first render
+  useEffect(() => {
+    const sock = initializeSocket();
+    if (sock) {
+      setSocketReady(true);
+    } else {
+      // Token might not have been in localStorage yet — retry once token is ready
+      const timer = setTimeout(() => {
+        const retrySock = initializeSocket();
+        if (retrySock) setSocketReady(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [token]);
 
   // Scroll to bottom
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  // Load followed counsellors
+  // Load followed counsellors AND sessions
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE_URL}/counsellors/following`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) {
-          const list: FollowedCounsellor[] = data.data.counsellors;
-          setFollowedCounsellors(list);
-          // Auto-populate sessions from followed counsellors
-          setSessions(list.map((c) => ({
+    Promise.all([
+      fetch(`${API_BASE_URL}/counsellors/following`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+      fetch(`${API_BASE_URL}/chat/sessions`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json())
+    ]).then(([followingData, sessionsData]) => {
+      let trueSessions: any[] = [];
+      if (sessionsData.sessions) {
+        trueSessions = sessionsData.sessions.map((s: any) => ({
+          id: s.id,
+          other_user_id: s.other_user_id,  // ← counsellor's actual user ID for socket routing
+          status: s.status || "active",
+          updated_at: s.updated_at || new Date().toISOString(),
+          anonymous_name: s.anonymous_name,
+          public_key: s.public_key,
+          is_online: s.is_online
+        }));
+      }
+      
+      const followed: FollowedCounsellor[] = followingData.success ? followingData.data.counsellors : [];
+      setFollowedCounsellors(followed);
+
+      const merged = [...trueSessions];
+      followed.forEach(c => {
+        if (!trueSessions.some(s => s.public_key === c.public_key)) {
+          merged.push({
             id: c.id,
-            status: "active" as const,
+            target_user_id: c.id,
+            status: "active",
             updated_at: new Date().toISOString(),
             anonymous_name: c.anonymous_name,
             public_key: c.public_key,
-            is_online: c.is_online,
-          })));
+            is_online: c.is_online
+          });
         }
-      })
-      .catch(() => {});
+      });
+      setSessions(merged);
+    }).catch(() => {});
   }, [token, setSessions]);
+
+  // Fetch chat history when active session changes
+  // Only fetch if activeSessionId is a real chat session UUID (not a counsellor user ID placeholder)
+  useEffect(() => {
+    if (!activeSessionId || !token) return;
+    // Skip if this is a temporary counsellor-user-id (before session is created)
+    // Real session IDs come from the backend and are stored alongside other_user_id
+    const session = useChatStore.getState().sessions.find(s => s.id === activeSessionId);
+    if (!session || session.target_user_id) return; // skip unresolved sessions
+
+    fetch(`${API_BASE_URL}/chat/sessions/${activeSessionId}/messages`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.messages) {
+        const mapped = data.messages.map((m: any) => ({
+          id: m.id,
+          session_id: m.session_id,
+          sender_id: m.sender_id,
+          encrypted_blob: m.encrypted_blob,
+          wrapped_aes_key_sender: m.wrapped_aes_key_sender,
+          wrapped_aes_key_recipient: m.wrapped_aes_key_recipient,
+          read_at: m.read_at,
+          created_at: m.created_at,
+          status: "delivered"
+        }));
+
+        const currentMessages = useChatStore.getState().messages;
+        const others = currentMessages.filter((p) => p.session_id !== activeSessionId);
+        setMessages([...others, ...mapped]);
+      }
+    })
+    .catch(err => console.error("Failed to fetch chat history", err));
+  }, [activeSessionId, token, setMessages]);
+
+  // Decrypt messages when vault is unlocked
+  useEffect(() => {
+    if (!unlockedPrivKey) return;
+    messages.forEach(async (msg) => {
+      if (msg.plaintext || !msg.encrypted_blob || !msg.wrapped_aes_key_sender) return;
+      try {
+        // Find the other party's public key
+        const session = sessions.find((s) => s.id === msg.session_id);
+        if (!session) return;
+        const wrappedKey = msg.sender_id === user?.id ? msg.wrapped_aes_key_sender : msg.wrapped_aes_key_recipient;
+        const text = await decryptMessage(wrappedKey, msg.encrypted_blob, unlockedPrivKey, session.public_key);
+        setMessagePlaintext(msg.id, text);
+      } catch (err) {
+        console.warn("Failed to decrypt message:", msg.id, err);
+      }
+    });
+  }, [unlockedPrivKey, messages, sessions, user?.id, setMessagePlaintext]);
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !activeSession || !unlockedPrivKey || !user?.publicKey) return;
+    if (!inputText.trim() || !activeSession || !unlockedPrivKey) return;
+    // Derive our own public key from localStorage as fallback if user.publicKey is undefined
+    const myPublicKey = user?.publicKey ||
+      localStorage.getItem("ventsafe-public-key") ||
+      localStorage.getItem("ventsafe-signup-public-key") ||
+      localStorage.getItem("ventsafe-counsellor-public-key");
+    if (!myPublicKey) {
+      console.error("Cannot send: own public key not available");
+      return;
+    }
+
+    const optimisticId = `optimistic-${Date.now()}`;
+    const messageText = inputText;
+    setInputText("");
+
+    // 1. Add optimistic message immediately so the UI is instant
+    addOptimisticMessage({
+      id: optimisticId,
+      session_id: activeSession.id,
+      sender_id: user?.id || "",
+      encrypted_blob: "",
+      wrapped_aes_key_sender: "",
+      wrapped_aes_key_recipient: "",
+      read_at: null,
+      created_at: new Date().toISOString(),
+      status: "sending",
+      plaintext: messageText,
+    });
+
     try {
       const { encryptedBlob, wrappedAesKeySender, wrappedAesKeyRecipient } = await encryptMessage(
-        inputText,
-        user.publicKey,
+        messageText,
+        unlockedPrivKey,
         activeSession.public_key
       );
-      getSocket()?.emit("send_message", {
-        receiverId: activeSession.id,
-        messagePayload: {
-          session_id: activeSession.id,
-          encryptedBlob,
-          wrappedAesKeySender,
-          wrappedAesKeyRecipient,
+
+      // 2. Emit with ack callback — backend confirms delivery
+      // IMPORTANT: receiverId must be the counsellor's USER ID (other_user_id),
+      // NOT the chat session UUID. The backend routes to `user:<userId>` rooms.
+      const receiverUserId = activeSession.other_user_id || activeSession.target_user_id;
+      if (!receiverUserId) {
+        console.error("Cannot send: receiver user ID unknown for session", activeSession.id);
+        updateMessageStatus(optimisticId, "failed");
+        return;
+      }
+
+      const sock = getSocket();
+      if (!sock?.connected) {
+        console.error("Socket not connected — cannot send message");
+        updateMessageStatus(optimisticId, "failed");
+        return;
+      }
+
+      sock.emit(
+        "send_message",
+        {
+          receiverId: receiverUserId,  // ← counsellor's USER ID, not session ID
+          messagePayload: {
+            session_id: activeSession.id,
+            encryptedBlob,
+            wrappedAesKeySender,
+            wrappedAesKeyRecipient,
+          },
         },
-      });
-      setInputText("");
+        (ack: { status: string }) => {
+          if (ack?.status === "delivered") {
+            // Server received it and relayed to recipient → ✓✓ delivered
+            updateMessageStatus(optimisticId, "delivered");
+          } else if (ack?.status === "error") {
+            updateMessageStatus(optimisticId, "failed");
+          } else {
+            // Server received it but recipient may be offline → ✓ sent
+            updateMessageStatus(optimisticId, "sent");
+          }
+        }
+      );
     } catch (err) {
       console.error("Encryption failed:", err);
+      updateMessageStatus(optimisticId, "failed");
     }
   };
 
@@ -252,14 +453,17 @@ export function SanctuaryUI() {
       {/* ── Vault Modal ── */}
       <AnimatePresence>
         {showVault && !unlockedPrivKey && (
-          <VaultModal onUnlock={(k) => { setUnlockedPrivKey(k); setShowVault(false); }} onClose={() => setShowVault(false)} />
+          <VaultModal onUnlock={(k) => { unlockVault(k); setShowVault(false); }} onClose={() => setShowVault(false)} />
         )}
       </AnimatePresence>
 
       {/* ── LEFT SIDEBAR ── */}
-      <div className="w-64 border-r border-[#233554] bg-[#0A192F] flex flex-col shrink-0">
+      <div className={`w-full md:w-64 border-r border-[#233554] bg-[#0A192F] flex-col shrink-0 ${activeSessionId ? "hidden md:flex" : "flex"}`}>
         {/* Logo */}
         <div className="p-5 border-b border-[#233554]">
+          <button onClick={() => router.push('/vent-space')} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-cyan-400 transition-colors mb-4">
+            <ArrowLeft size={14} /> Back to Vent Space
+          </button>
           <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 tracking-tighter">VentSafe</h1>
           <p className="text-[10px] text-slate-500 mt-0.5">The Sanctuary</p>
         </div>
@@ -297,7 +501,7 @@ export function SanctuaryUI() {
                 sessions.map((s) => (
                   <button
                     key={s.id}
-                    onClick={() => setActiveSession(s.id)}
+                    onClick={() => handleSessionClick(s)}
                     className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${activeSessionId === s.id ? "bg-[#112240] border border-cyan-800/40" : "hover:bg-[#112240]/60"}`}
                   >
                     <div className="relative">
@@ -335,7 +539,7 @@ export function SanctuaryUI() {
       </div>
 
       {/* ── MAIN AREA ── */}
-      <div className="flex-1 flex flex-col bg-[#0A192F] relative overflow-hidden">
+      <div className={`flex-1 flex-col bg-[#0A192F] relative overflow-hidden ${!activeSessionId && panel === "chats" ? "hidden md:flex" : "flex"}`}>
         {/* Subtle background grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(17,34,64,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(17,34,64,0.3)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
@@ -406,9 +610,12 @@ export function SanctuaryUI() {
         {activeSession ? (
           <>
             {/* Header */}
-            <div className="relative z-10 h-20 border-b border-[#233554] flex items-center px-6 gap-4 bg-[#0a192f]/90 backdrop-blur-md shrink-0">
+            <div className="relative z-10 h-20 border-b border-[#233554] flex items-center px-4 md:px-6 gap-3 md:gap-4 bg-[#0a192f]/90 backdrop-blur-md shrink-0">
+              <button onClick={() => setActiveSession(null)} className="md:hidden p-1.5 -ml-2 text-slate-400 hover:text-white transition-colors">
+                <ArrowLeft size={20} />
+              </button>
               <GradientOrb fingerprint={activeSession.public_key} size={40} pulse={activeSession.is_online} />
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-lg font-bold text-slate-100">{activeSession.anonymous_name}</h2>
                   <TierBadge tier={(followedCounsellors.find(c => c.id === activeSession.id)?.tier) ?? null} />
@@ -442,13 +649,24 @@ export function SanctuaryUI() {
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                   className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`max-w-md px-4 py-3 rounded-2xl ${
+                  <div className={`max-w-[85%] md:max-w-md px-4 py-3 rounded-2xl ${
                     msg.sender_id === user?.id
                       ? "bg-cyan-900/40 text-cyan-50 rounded-tr-sm border border-cyan-800/40"
                       : "bg-[#112240]/80 text-slate-200 rounded-tl-sm border border-slate-700/40"
-                  }`}>
-                    <p className="text-sm">{unlockedPrivKey ? "[Decrypted message]" : <span className="blur-sm select-none">Encrypted</span>}</p>
-                    <p className="text-[10px] text-slate-500 mt-1 text-right">{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                  } ${msg.status === "failed" ? "opacity-50" : ""}`}>
+                    <p className="text-sm">{msg.plaintext || (unlockedPrivKey ? "Decrypting..." : <span className="blur-sm select-none">Encrypted</span>)}</p>
+                    <div className="flex items-center justify-end gap-1 mt-1">
+                      <p className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                      {msg.sender_id === user?.id && <MessageStatusIcon status={msg.status} />}
+                    </div>
+                    {msg.status === "failed" && (
+                      <button
+                        onClick={() => void handleSendMessage({ preventDefault: () => {} } as React.FormEvent)}
+                        className="text-[9px] text-red-400 underline mt-0.5"
+                      >
+                        Tap to retry
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -462,6 +680,12 @@ export function SanctuaryUI() {
                   type="text"
                   value={inputText}
                   onChange={(e) => { setInputText(e.target.value); handleTyping(); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && inputText.trim() && unlockedPrivKey) {
+                      e.preventDefault();
+                      void handleSendMessage(e as unknown as React.FormEvent);
+                    }
+                  }}
                   disabled={!unlockedPrivKey}
                   placeholder={unlockedPrivKey ? "Write a secure message..." : "Unlock vault to send messages..."}
                   className="flex-1 bg-[#112240] border border-[#233554] rounded-full px-6 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors placeholder:text-slate-600 disabled:opacity-40"

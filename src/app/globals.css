@@ -43,6 +43,16 @@ body {
   font-family: var(--font-ventsafe-font);
 }
 
+/* Global: all interactive elements show pointer cursor */
+button,
+a,
+[role="button"],
+label[for],
+select,
+summary {
+  cursor: pointer;
+}
+
 /* Custom utilities */
 @layer utilities {
   /* Custom scrollbar */

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ShieldCheck, GraduationCap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ShieldCheck, GraduationCap, X } from "lucide-react";
 import { API_BASE_URL } from "@/config/constants";
 import { getInitials } from "@/lib/utils";
 
@@ -17,11 +18,11 @@ interface CounsellorEntry {
   follower_count: number;
 }
 
-interface StudentEntry {
+interface FollowerEntry {
   id: string;
   anonymous_name: string;
   is_online: boolean;
-  last_seen: string | null;
+  public_key: string;
 }
 
 interface AvailableUsersProps {
@@ -143,7 +144,7 @@ function StudentView({ token }: { token: string }) {
               {/* Follow / Following button */}
               <button
                 onClick={() => void handleFollow(c.id)}
-                className={`mt-1 text-[9px] px-2 py-0.5 rounded-full font-medium border transition-colors ${c.is_following
+                className={`mt-1 text-[9px] px-2 py-0.5 rounded-full font-medium border transition-colors cursor-pointer ${c.is_following
                     ? "bg-ventsafe-foreground text-white border-ventsafe-foreground"
                     : "border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy"
                   }`}
@@ -158,25 +159,27 @@ function StudentView({ token }: { token: string }) {
   );
 }
 
-// ─── Counsellor view: Active Students ────────────────────────────────────────
+// ─── Counsellor view: Followers (students following this counsellor) ─────────
 
 function CounsellorView({ token }: { token: string }) {
-  const [students, setStudents] = useState<StudentEntry[]>([]);
+  const router = useRouter();
+  const [followers, setFollowers] = useState<FollowerEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [popup, setPopup] = useState<string | null>(null);
 
   const fetch_ = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/counsellors/students`, {
+      const res = await fetch(`${API_BASE_URL}/counsellors/followers/list`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = (await res.json()) as {
         success: boolean;
-        data: { students: StudentEntry[] };
+        data: { followers: FollowerEntry[] };
       };
-      if (data.success) setStudents(data.data.students);
+      if (data.success) setFollowers(data.data.followers);
     } catch (err) {
-      console.error("Failed to fetch active students:", err);
+      console.error("Failed to fetch followers:", err);
     } finally {
       setLoading(false);
     }
@@ -188,11 +191,16 @@ function CounsellorView({ token }: { token: string }) {
     return () => clearInterval(interval);
   }, [fetch_]);
 
+  const handleChat = (studentId: string) => {
+    // Navigate to chat page with this student pre-selected
+    router.push(`/chat?student=${studentId}`);
+  };
+
   if (loading) {
     return (
       <div>
         <p className="text-sm font-semibold text-ventsafe-foreground mb-2">
-          Active Students
+          Students Following You
         </p>
         <div className="flex gap-4 overflow-x-auto pb-1">
           {[1, 2, 3].map((i) => (
@@ -206,14 +214,14 @@ function CounsellorView({ token }: { token: string }) {
     );
   }
 
-  if (students.length === 0) {
+  if (followers.length === 0) {
     return (
       <div>
         <p className="text-sm font-semibold text-ventsafe-foreground mb-1">
-          Active Students
+          Students Following You
         </p>
         <p className="text-xs text-ventsafe-foreground/40">
-          No students are active right now.
+          No students are following you yet.
         </p>
       </div>
     );
@@ -222,10 +230,10 @@ function CounsellorView({ token }: { token: string }) {
   return (
     <div>
       <p className="text-sm font-semibold text-ventsafe-foreground mb-2">
-        Active Students
+        Students Following You
       </p>
       <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide">
-        {students.map((s) => (
+        {followers.map((s) => (
           <div
             key={s.id}
             className="flex flex-col items-center gap-1.5 shrink-0"
@@ -249,14 +257,35 @@ function CounsellorView({ token }: { token: string }) {
                   Student
                 </span>
               </div>
-              {/* Counsellors can chat with any student — no follow button */}
-              <button className="mt-1 text-[9px] px-2 py-0.5 rounded-full font-medium border border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy transition-colors">
+              <button
+                onClick={() => handleChat(s.id)}
+                className="mt-1 text-[9px] px-2 py-0.5 rounded-full font-medium border border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy transition-colors cursor-pointer"
+              >
                 Chat
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Non-follower popup (shown when triggered from other components) */}
+      {popup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setPopup(null)} />
+          <div className="relative bg-white rounded-xl shadow-xl p-6 max-w-sm text-center z-10">
+            <button onClick={() => setPopup(null)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer">
+              <X size={16} />
+            </button>
+            <p className="text-sm text-gray-700 leading-relaxed">{popup}</p>
+            <button
+              onClick={() => setPopup(null)}
+              className="mt-4 px-4 py-2 bg-ventsafe-foreground text-white rounded-lg text-sm font-medium cursor-pointer"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

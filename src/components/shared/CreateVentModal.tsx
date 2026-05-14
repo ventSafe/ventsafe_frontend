@@ -1,20 +1,21 @@
 "use client";
- 
+
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronDown, Lock, Users, Globe, Eye } from "lucide-react";
+import { X, ChevronDown, Lock, Users, Globe, Eye, Sparkles } from "lucide-react";
 import type { PostViewData } from "./PostCard";
 import { API_BASE_URL } from "@/config/constants";
- 
+
 interface CreateVentModalProps {
   isOpen: boolean;
   onClose: () => void;
   token: string;
   authorName: string;
+  viewerRole?: string;
   onPosted: (post: PostViewData) => void;
 }
- 
-type Privacy = "private" | "following_counsellors" | "all_counsellors" | "public";
+
+type Privacy = "private" | "following_counsellors" | "all_counsellors" | "public" | "following_students" | "all_students";
 type Category =
   | "general"
   | "academic_pressure"
@@ -24,7 +25,7 @@ type Category =
   | "health_concerns"
   | "career_anxiety"
   | "loneliness";
- 
+
 const CATEGORIES: { value: Category; label: string; color: string }[] = [
   { value: "general", label: "General", color: "bg-gray-100 text-gray-700 border-gray-200" },
   { value: "academic_pressure", label: "Academic Pressure", color: "bg-blue-100 text-blue-700 border-blue-200" },
@@ -35,45 +36,55 @@ const CATEGORIES: { value: Category; label: string; color: string }[] = [
   { value: "career_anxiety", label: "Career Anxiety", color: "bg-purple-100 text-purple-700 border-purple-200" },
   { value: "loneliness", label: "Loneliness", color: "bg-slate-100 text-slate-700 border-slate-200" },
 ];
- 
-const PRIVACY_OPTIONS: { value: Privacy; label: string; description: string; icon: React.ReactNode }[] = [
+
+const STUDENT_PRIVACY_OPTIONS: { value: Privacy; label: string; description: string; icon: React.ReactNode }[] = [
   { value: "private", label: "Private", description: "Only you can see this", icon: <Lock size={14} /> },
   { value: "following_counsellors", label: "Me + Counsellors I Follow", description: "You and your followed counsellors", icon: <Users size={14} /> },
   { value: "all_counsellors", label: "Me + All Counsellors", description: "You and all approved counsellors", icon: <Eye size={14} /> },
   { value: "public", label: "Public", description: "Share with everyone. Anonymous.", icon: <Globe size={14} /> },
 ];
- 
+
+const COUNSELLOR_PRIVACY_OPTIONS: { value: Privacy; label: string; description: string; icon: React.ReactNode }[] = [
+  { value: "private", label: "Private", description: "Only you can see this", icon: <Lock size={14} /> },
+  { value: "following_students", label: "Me + Students Following Me", description: "You and students who follow you", icon: <Users size={14} /> },
+  { value: "all_students", label: "Me + All Students", description: "Visible to all students on the platform", icon: <Globe size={14} /> },
+  { value: "public", label: "Public", description: "Share with everyone. Anonymous.", icon: <Globe size={14} /> },
+];
+
 const EMOJIS = ["😊", "😢", "😰", "😤", "😔", "🤔", "😭", "😡", "🥺", "💪"];
- 
+
 export function CreateVentModal({
   isOpen,
   onClose,
   token,
   authorName,
+  viewerRole = "student",
   onPosted,
 }: CreateVentModalProps) {
+  const isCounsellor = viewerRole === "counselor";
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<Category>("general");
-  const [privacy, setPrivacy] = useState<Privacy>("public");
+  const [privacy, setPrivacy] = useState<Privacy>("private");
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
- 
+
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => textareaRef.current?.focus(), 100);
     } else {
       setContent("");
       setCategory("general");
-      setPrivacy("public");
+      setPrivacy("private");
       setError("");
     }
   }, [isOpen]);
- 
-  const selectedPrivacy = PRIVACY_OPTIONS.find((p) => p.value === privacy)!;
- 
+
+  const privacyOptions = isCounsellor ? COUNSELLOR_PRIVACY_OPTIONS : STUDENT_PRIVACY_OPTIONS;
+  const selectedPrivacy = privacyOptions.find((p) => p.value === privacy) ?? privacyOptions[0];
+
   const handleSubmit = async () => {
     if (!content.trim() || content.length < 1) {
       setError("Please write something before posting.");
@@ -103,7 +114,7 @@ export function CreateVentModal({
       setSubmitting(false);
     }
   };
- 
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -116,7 +127,7 @@ export function CreateVentModal({
             onClick={onClose}
             className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"
           />
- 
+
           {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
@@ -128,26 +139,26 @@ export function CreateVentModal({
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-ventsafe-border/30">
               <div className="flex items-center gap-2">
-                <span className="text-lg">✨</span>
+                <span className="text-lg">{isCounsellor ? "🌱" : "✨"}</span>
                 <div>
                   <h2 className="text-base font-bold text-ventsafe-foreground">
-                    What&apos;s on your mind?
+                    {isCounsellor ? "Share Encouragement" : "What\u0027s on your mind?"}
                   </h2>
                   <p className="text-xs text-ventsafe-foreground/50">
-                    Express yourself freely. No judgment here!
+                    {isCounsellor ? "Motivate and support students with your words." : "Express yourself freely. No judgment here!"}
                   </p>
                 </div>
               </div>
-                          <button
-                              title="Close"
-                              type="button"
+              <button
+                title="Close"
+                type="button"
                 onClick={onClose}
                 className="p-2 hover:bg-ventsafe-muted rounded-ventsafe-sm transition-colors"
               >
                 <X size={18} className="text-ventsafe-foreground/50" />
               </button>
             </div>
- 
+
             <div className="px-6 py-4 space-y-5">
               {/* Textarea */}
               <textarea
@@ -157,10 +168,16 @@ export function CreateVentModal({
                   setContent(e.target.value);
                   setError("");
                 }}
-                placeholder="Share what you are feeling or share your recovery story. This is your safe space."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && content.trim()) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
+                placeholder={isCounsellor ? "Write a motivational message, share a resource, or encourage a student..." : "Share what you are feeling or share your recovery story. This is your safe space."}
                 className="w-full min-h-[180px] border border-ventsafe-border/50 rounded-ventsafe-md p-4 text-sm text-ventsafe-foreground resize-none focus:outline-none focus:border-ventsafe-navy placeholder:text-ventsafe-foreground/30 leading-relaxed"
               />
- 
+
               {/* Bottom of textarea — emoji + char count */}
               <div className="flex items-center justify-between -mt-2">
                 <div className="relative">
@@ -198,7 +215,7 @@ export function CreateVentModal({
                   {content.length.toLocaleString()}/10,000
                 </span>
               </div>
- 
+
               {/* Categories */}
               <div>
                 <p className="text-sm font-semibold text-ventsafe-foreground mb-2">
@@ -209,18 +226,28 @@ export function CreateVentModal({
                     <button
                       key={cat.value}
                       onClick={() => setCategory(cat.value)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-                        category === cat.value
-                          ? cat.color + " ring-2 ring-offset-1 ring-current"
-                          : "bg-white border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy"
-                      }`}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${category === cat.value
+                        ? cat.color + " ring-2 ring-offset-1 ring-current"
+                        : "bg-white border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy"
+                        }`}
                     >
                       {cat.label}
                     </button>
                   ))}
                 </div>
+                {/* AI Category Selection — Coming Soon */}
+                <button
+                  disabled
+                  className="mt-3 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border border-dashed border-ventsafe-border text-ventsafe-foreground/40 bg-ventsafe-muted/30 cursor-not-allowed"
+                >
+                  <Sparkles size={14} className="text-ventsafe-navy/40" />
+                  AI Category Selection
+                  <span className="ml-1 px-1.5 py-0.5 text-[9px] font-bold uppercase bg-ventsafe-navy/10 text-ventsafe-navy rounded-full">
+                    Coming Soon
+                  </span>
+                </button>
               </div>
- 
+
               {/* Privacy */}
               <div>
                 <p className="text-sm font-semibold text-ventsafe-foreground mb-2">
@@ -249,7 +276,7 @@ export function CreateVentModal({
                       className={`text-ventsafe-foreground/40 transition-transform ${privacyOpen ? "rotate-180" : ""}`}
                     />
                   </button>
- 
+
                   <AnimatePresence>
                     {privacyOpen && (
                       <motion.div
@@ -258,16 +285,15 @@ export function CreateVentModal({
                         exit={{ opacity: 0, y: -4 }}
                         className="absolute top-full left-0 right-0 mt-1 bg-white border border-ventsafe-border rounded-ventsafe-md shadow-lg z-10 overflow-hidden"
                       >
-                        {PRIVACY_OPTIONS.map((opt) => (
+                        {privacyOptions.map((opt) => (
                           <button
                             key={opt.value}
                             onClick={() => {
                               setPrivacy(opt.value);
                               setPrivacyOpen(false);
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-ventsafe-muted transition-colors ${
-                              privacy === opt.value ? "bg-ventsafe-muted" : ""
-                            }`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-ventsafe-muted transition-colors ${privacy === opt.value ? "bg-ventsafe-muted" : ""
+                              }`}
                           >
                             <span className="text-ventsafe-navy">{opt.icon}</span>
                             <div>
@@ -288,19 +314,19 @@ export function CreateVentModal({
                   </AnimatePresence>
                 </div>
               </div>
- 
+
               {/* Error */}
               {error && (
                 <p className="text-xs text-red-500 font-medium">{error}</p>
               )}
- 
+
               {/* Submit */}
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !content.trim()}
-                className="w-full py-3 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-md font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity"
+                className="w-full py-3 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-md font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity cursor-pointer"
               >
-                {submitting ? "Posting..." : "Vent"}
+                {submitting ? "Posting..." : isCounsellor ? "Share" : "Vent"}
               </button>
             </div>
           </motion.div>

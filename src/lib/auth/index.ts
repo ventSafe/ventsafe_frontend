@@ -46,25 +46,26 @@ export async function signup(
   try {
     const response = await apiFetch<{
       user: User;
-      keyPair: { publicKey: string; privateKey: string; fingerprint: string };
       token: string;
     }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({
         gender: formData.gender,
         agreeToTerms: formData.agreeToTerms,
+        publicKey: formData.publicKey,
+        ...(formData.role ? { role: formData.role } : {}),
       }),
     });
 
     if (response.success && response.data) {
-      const { user, keyPair, token } = response.data;
+      const { user, token } = response.data;
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
       // Set cookie on frontend domain so Next.js middleware can read it
       const maxAge = 30 * 24 * 60 * 60;
       document.cookie = `ventsafe-token=${token}; path=/; max-age=${maxAge}; samesite=lax`;
       saveBlockchainIdentity({
-        publicKey: keyPair.publicKey,
+        publicKey: formData.publicKey,
         anonymousId: user.anonymousId,
         encryptedPrivateKey: "",
         network: "ventsafe",
@@ -75,8 +76,8 @@ export async function signup(
         success: true,
         data: {
           ...user,
-          privateKey: keyPair.privateKey,
-          publicKey: keyPair.publicKey,
+          privateKey: "", // It will be set in the page.tsx where generated
+          publicKey: formData.publicKey,
         },
         message: response.message,
       };
