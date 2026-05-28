@@ -242,7 +242,7 @@ export function Hero() {
 
           {/* Illustration */}
           <Image
-            src="/images/vent image.png"
+            src="/images/vent-image.png"
             alt="Illustration Image"
             width={340}
             height={411}
