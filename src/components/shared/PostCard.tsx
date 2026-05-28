@@ -233,6 +233,7 @@ function CommentItem({
   const [liked, setLiked] = useState(comment.viewer_has_liked);
   const [likeCount, setLikeCount] = useState(comment.likes_count);
   const [isEditing, setIsEditing] = useState(false);
+  const [currentContent, setCurrentContent] = useState(comment.content);
   const [editContent, setEditContent] = useState(comment.content);
   const [menuOpen, setMenuOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -266,7 +267,7 @@ function CommentItem({
     ).then((r) => r.json());
 
     if (res.success) {
-      comment.content = editContent.trim();
+      setCurrentContent(editContent.trim());
       setIsEditing(false);
     }
     setSubmitting(false);
@@ -376,7 +377,7 @@ function CommentItem({
           </div>
         ) : (
           <p className="text-xs text-ventsafe-foreground/80 leading-relaxed whitespace-pre-wrap">
-            {comment.content}
+            {currentContent}
           </p>
         )}
 
