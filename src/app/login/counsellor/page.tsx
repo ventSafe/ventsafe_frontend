@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { LogoutModal } from "@/components/shared/LogoutModal";
 import { motion } from "framer-motion";
@@ -14,7 +14,7 @@ import { decryptPrivateKey, encryptPrivateKey, deriveKeysFromSeedPhrase } from "
 import { STORAGE_KEYS } from "@/config/constants";
 import { ShieldCheck, User as UserIcon } from "lucide-react";
 
-export default function CounsellorLoginPage() {
+function CounsellorLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect");
@@ -358,5 +358,13 @@ export default function CounsellorLoginPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function CounsellorLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-ventsafe-background flex items-center justify-center text-ventsafe-foreground">Loading...</div>}>
+      <CounsellorLoginContent />
+    </Suspense>
   );
 }
