@@ -14,6 +14,7 @@ import {
   logout as apiLogout,
 } from "@/lib/auth";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -165,7 +166,8 @@ export function Header() {
           </nav>
 
           {/* Auth Section */}
-          <div className="flex items-center gap-4 min-h-[36px]">
+          <div className="flex items-center gap-2 md:gap-4 min-h-[36px]">
+            <ThemeToggle />
             {!mounted || !isInitialized ? (
               <div className="flex items-center justify-center px-4">
                 <div className="w-4 h-4 border-2 border-ventsafe-foreground/30 border-t-ventsafe-foreground rounded-full animate-spin" />
@@ -205,7 +207,7 @@ export function Header() {
                 <div className="md:hidden relative" ref={userDropdownRef}>
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border border-ventsafe-border bg-white hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
+                    className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full border border-ventsafe-border bg-ventsafe-background hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
                   >
                     <UserAvatar name={anonymousName} role={user?.role} className="w-8 h-8 text-xs" />
                     <span className="text-sm font-semibold text-ventsafe-foreground max-w-[80px] truncate">
@@ -222,11 +224,11 @@ export function Header() {
                         initial={{ opacity: 0, y: 6, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                        className="absolute right-0 top-full mt-2 w-56 bg-white border border-ventsafe-border rounded-xl shadow-lg overflow-hidden z-50"
+                        className="absolute right-0 top-full mt-2 w-56 bg-ventsafe-background border border-ventsafe-border rounded-xl shadow-lg overflow-hidden z-50"
                       >
                         <div className="py-1 border-b border-ventsafe-border/50">
                           {navLinks.map((link) => (
-                            <Link
+                             <Link
                               key={link.href}
                               href={link.href}
                               onClick={() => setUserDropdownOpen(false)}
@@ -304,7 +306,7 @@ export function Header() {
                         initial={{ opacity: 0, y: -8, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                        className="absolute right-0 mt-2 w-56 bg-white border border-ventsafe-border rounded-xl shadow-xl overflow-hidden z-50"
+                        className="absolute right-0 mt-2 w-56 bg-ventsafe-background border border-ventsafe-border rounded-xl shadow-xl overflow-hidden z-50"
                       >
                         <div className="p-1.5 flex flex-col">
                           <button
@@ -348,7 +350,7 @@ export function Header() {
                         initial={{ opacity: 0, y: 6, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                        className="absolute right-0 top-full mt-2 w-56 bg-white border border-ventsafe-border rounded-xl shadow-lg overflow-hidden z-50"
+                        className="absolute right-0 top-full mt-2 w-56 bg-ventsafe-background border border-ventsafe-border rounded-xl shadow-lg overflow-hidden z-50"
                       >
                         <div className="py-1 border-b border-ventsafe-border/50">
                           {navLinks.map((link) => (
@@ -373,7 +375,7 @@ export function Header() {
                           <Link 
                             href="/signup" 
                             onClick={() => setMobileMenuOpen(false)} 
-                            className="w-full py-2 text-center text-sm font-medium bg-ventsafe-foreground text-white rounded-lg"
+                            className="w-full py-2 text-center text-sm font-medium bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-lg"
                           >
                             Sign Up
                           </Link>
@@ -390,3 +392,4 @@ export function Header() {
     </header>
   );
 }
+

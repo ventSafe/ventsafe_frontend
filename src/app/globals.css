@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* VentSafe Light Theme Colors */
-  --color-ventsafe-background: #eff0ff;
-  --color-ventsafe-foreground: #000562;
-  --color-ventsafe-navy: #1e28a0;
-  --color-ventsafe-primary: #000681;
-  --color-ventsafe-primary-foreground: #f3f3ff;
-  --color-ventsafe-secondary: #2d3ba8;
-  --color-ventsafe-accent: #4f5fd9;
-  --color-ventsafe-muted: #e5e7f0;
-  --color-ventsafe-border: #d1d5e4;
+  /* Dynamic Theme Colors mapping to CSS Variables */
+  --color-ventsafe-background: var(--bg-color);
+  --color-ventsafe-foreground: var(--fg-color);
+  --color-ventsafe-navy: var(--navy-color);
+  --color-ventsafe-primary: var(--primary-color);
+  --color-ventsafe-primary-foreground: var(--primary-fg-color);
+  --color-ventsafe-secondary: var(--secondary-color);
+  --color-ventsafe-accent: var(--accent-color);
+  --color-ventsafe-muted: var(--muted-color);
+  --color-ventsafe-border: var(--border-color);
   --color-ventsafe-black: #000000;
-  --color-ventsafe-social: #000562;
+  --color-ventsafe-social: var(--social-color);
+  --color-ventsafe-card: var(--card-color);
 
   /* Font size */
   --text-ventsafe-tiny: 12px;
@@ -35,6 +36,38 @@
 
   /* Font family */
   --font-ventsafe-font: "Montserrat", sans-serif;
+}
+
+@layer base {
+  :root {
+    /* VentSafe Light Theme Colors */
+    --bg-color: #eff0ff;
+    --fg-color: #000562;
+    --navy-color: #1e28a0;
+    --primary-color: #000681;
+    --primary-fg-color: #f3f3ff;
+    --secondary-color: #2d3ba8;
+    --accent-color: #4f5fd9;
+    --muted-color: #e5e7f0;
+    --border-color: #d1d5e4;
+    --social-color: #000562;
+    --card-color: #ffffff;
+  }
+
+  [data-theme='dark'] {
+    /* VentSafe Dark Theme Colors (Hexora aesthetic) */
+    --bg-color: #05050A;
+    --fg-color: #ffffff;
+    --navy-color: #5B50FF;
+    --primary-color: #5B50FF;
+    --primary-fg-color: #ffffff;
+    --secondary-color: #2d3ba8;
+    --accent-color: #4f5fd9;
+    --muted-color: #111116;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --social-color: #ffffff;
+    --card-color: #0A0A0F;
+  }
 }
 
 body {

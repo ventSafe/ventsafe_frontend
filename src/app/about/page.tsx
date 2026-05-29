@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Shield, EyeOff, Heart, Users, Globe } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/shared/Footer";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -102,6 +104,7 @@ const TeamIllustration = () => (
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-ventsafe-background text-ventsafe-foreground font-sans overflow-hidden transition-colors duration-300">
+      <Header />
       
       {/* Background Dot Grid */}
       <div 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { Providers } from "@/components/providers/ThemeProvider";
 import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
 
@@ -24,11 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={montserrat.variable}>
+    <html lang="en" className={montserrat.variable} suppressHydrationWarning>
       <body className="font-ventsafe-font" suppressHydrationWarning>
-        {/* AuthProvider runs checkAuth() once on every page load */}
-        <AuthProvider>{children}</AuthProvider>
-        <Toaster position="top-center" richColors />
+        <Providers>
+          {/* AuthProvider runs checkAuth() once on every page load */}
+          <AuthProvider>{children}</AuthProvider>
+          <Toaster position="top-center" richColors />
+        </Providers>
       </body>
     </html>
   );
