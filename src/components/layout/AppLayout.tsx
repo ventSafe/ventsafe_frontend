@@ -104,7 +104,7 @@ function RoleSwitchModal({
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="relative w-full max-w-sm bg-white rounded-ventsafe-md shadow-2xl z-10 overflow-hidden"
+        className="relative w-full max-w-sm bg-ventsafe-card rounded-ventsafe-md shadow-2xl z-10 overflow-hidden"
       >
         <div className="px-6 py-5 border-b border-ventsafe-border/30">
           <h2 className="text-base font-bold text-ventsafe-foreground">
@@ -464,7 +464,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((o) => !o)}
-                className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-ventsafe-full border border-ventsafe-border bg-white hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
+                className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-ventsafe-full border border-ventsafe-border bg-ventsafe-card hover:border-ventsafe-navy transition-all shadow-sm active:scale-95"
               >
                 <UserAvatar name={anonymousName} role={userRole} className="w-8 h-8 text-xs" />
                 <span className="text-sm font-semibold text-ventsafe-foreground hidden md:inline max-w-30 truncate">
@@ -488,7 +488,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.97 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-56 bg-white border border-ventsafe-border rounded-ventsafe-md shadow-lg overflow-hidden z-50"
+                    className="absolute right-0 top-full mt-2 w-56 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md shadow-lg overflow-hidden z-50"
                   >
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-ventsafe-border/50 bg-ventsafe-muted/30">
                       <UserAvatar name={anonymousName} role={userRole} className="w-10 h-10 text-sm" />
@@ -560,7 +560,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     <div className="border-t border-ventsafe-border/50 py-1">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
                       >
                         <LogOut size={15} />
                         Log out

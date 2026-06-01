@@ -17,18 +17,18 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 // ── Specialisations ────────────────────────────────────────────────────────────
 const SPECIALISATIONS = [
-  { label: "Anxiety",           icon: Brain },
-  { label: "Depression",        icon: Heart },
-  { label: "Academic Stress",   icon: GraduationCap },
-  { label: "Relationships",     icon: Users },
-  { label: "Family Issues",     icon: Home },
-  { label: "Grief & Loss",      icon: Heart },
-  { label: "Career Anxiety",    icon: Briefcase },
-  { label: "Loneliness",        icon: User },
-  { label: "Trauma",            icon: Shield },
-  { label: "Substance Use",     icon: Pill },
-  { label: "Self-harm",         icon: AlertTriangle },
-  { label: "Crisis Support",    icon: AlertTriangle },
+  { label: "Anxiety", icon: Brain },
+  { label: "Depression", icon: Heart },
+  { label: "Academic Stress", icon: GraduationCap },
+  { label: "Relationships", icon: Users },
+  { label: "Family Issues", icon: Home },
+  { label: "Grief & Loss", icon: Heart },
+  { label: "Career Anxiety", icon: Briefcase },
+  { label: "Loneliness", icon: User },
+  { label: "Trauma", icon: Shield },
+  { label: "Substance Use", icon: Pill },
+  { label: "Self-harm", icon: AlertTriangle },
+  { label: "Crisis Support", icon: AlertTriangle },
 ];
 
 type OnboardingStep = "tier" | "details" | "verification" | "specialisations" | "statement" | "submitted";
@@ -63,7 +63,7 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden:  { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 260, damping: 24 } },
 };
 
@@ -106,26 +106,26 @@ function OnboardingProgress({ step }: { step: OnboardingStep }) {
 
 export default function CounsellorOnboardingPage() {
   const router = useRouter();
-  const [step, setStep]         = useState<OnboardingStep>("tier");
+  const [step, setStep] = useState<OnboardingStep>("tier");
   const [direction, setDirection] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError]   = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   // Form state
-  const [tier, setTier]                   = useState<"volunteer" | "professional" | "">("");
-  const [realName, setRealName]           = useState("");
-  const [email, setEmail]                 = useState("");
-  const [institution, setInstitution]     = useState("");   // volunteer
+  const [tier, setTier] = useState<"volunteer" | "professional" | "">("");
+  const [realName, setRealName] = useState("");
+  const [email, setEmail] = useState("");
+  const [institution, setInstitution] = useState("");   // volunteer
   const [licenseNumber, setLicenseNumber] = useState("");   // professional
-  const [documentUrl, setDocumentUrl]     = useState("");
+  const [documentUrl, setDocumentUrl] = useState("");
   const [selectedSpecs, setSelectedSpecs] = useState<string[]>([]);
-  const [statement, setStatement]         = useState("");
+  const [statement, setStatement] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const goTo = (next: OnboardingStep) => {
     const curr = STEP_ORDER.indexOf(step);
-    const nxt  = STEP_ORDER.indexOf(next);
+    const nxt = STEP_ORDER.indexOf(next);
     setDirection(nxt > curr ? 1 : -1);
     setStep(next);
   };
@@ -191,9 +191,9 @@ export default function CounsellorOnboardingPage() {
           tier,
           realName,
           email,
-          institution:    tier === "volunteer"    ? institution    : undefined,
-          licenseNumber:  tier === "professional" ? licenseNumber  : undefined,
-          documentUrl:    documentUrl || undefined,
+          institution: tier === "volunteer" ? institution : undefined,
+          licenseNumber: tier === "professional" ? licenseNumber : undefined,
+          documentUrl: documentUrl || undefined,
           specialisations: selectedSpecs,
           statement,
         }),
@@ -211,8 +211,7 @@ export default function CounsellorOnboardingPage() {
   };
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-3 bg-ventsafe-foreground/5 border rounded-ventsafe-sm text-ventsafe-foreground text-sm focus:outline-none focus:border-ventsafe-foreground transition-colors ${
-      errors[field] ? "border-red-400" : "border-ventsafe-foreground/20"
+    `w-full px-4 py-3 bg-ventsafe-foreground/5 border rounded-ventsafe-sm text-ventsafe-foreground text-sm focus:outline-none focus:border-ventsafe-foreground transition-colors ${errors[field] ? "border-red-400" : "border-ventsafe-foreground/20"
     }`;
 
   return (
@@ -278,11 +277,10 @@ export default function CounsellorOnboardingPage() {
                     whileHover={{ scale: 1.015, y: -2 }}
                     whileTap={{ scale: 0.99 }}
                     onClick={() => setTier("volunteer")}
-                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                      tier === "volunteer"
+                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${tier === "volunteer"
                         ? "border-ventsafe-foreground bg-ventsafe-foreground/8 shadow-lg shadow-ventsafe-foreground/10"
                         : "border-ventsafe-foreground/15 bg-white hover:border-ventsafe-foreground/40"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-4">
                       <motion.div
@@ -557,11 +555,10 @@ export default function CounsellorOnboardingPage() {
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
                           onClick={() => toggleSpec(label)}
-                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${
-                            selected
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${selected
                               ? "border-ventsafe-foreground bg-ventsafe-foreground text-white shadow-md shadow-ventsafe-foreground/20"
                               : "border-ventsafe-foreground/15 bg-white text-ventsafe-foreground hover:border-ventsafe-foreground/40"
-                          }`}
+                            }`}
                         >
                           <Icon className="w-4 h-4 shrink-0" />
                           <span className="text-xs">{label}</span>
@@ -630,9 +627,8 @@ export default function CounsellorOnboardingPage() {
                       value={statement}
                       onChange={(e) => setStatement(e.target.value)}
                       rows={7}
-                      className={`w-full px-4 py-3 bg-ventsafe-foreground/5 border rounded-ventsafe-sm text-ventsafe-foreground text-sm focus:outline-none focus:border-ventsafe-foreground transition-colors resize-none ${
-                        errors.statement ? "border-red-400" : "border-ventsafe-foreground/20"
-                      }`}
+                      className={`w-full px-4 py-3 bg-ventsafe-foreground/5 border rounded-ventsafe-sm text-ventsafe-foreground text-sm focus:outline-none focus:border-ventsafe-foreground transition-colors resize-none ${errors.statement ? "border-red-400" : "border-ventsafe-foreground/20"
+                        }`}
                     />
                     <div className="flex items-center justify-between mt-1">
                       <span className={`text-xs ${statement.length < 50 ? "text-red-400" : "text-green-600"}`}>
@@ -753,7 +749,7 @@ export default function CounsellorOnboardingPage() {
                   transition={{ delay: 0.5 }}
                   className="text-2xl font-bold text-ventsafe-foreground mb-3"
                 >
-                  Application Submitted! 🎉
+                  Application Submitted!
                 </motion.h2>
 
                 <motion.p
@@ -782,9 +778,9 @@ export default function CounsellorOnboardingPage() {
                   className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg mb-8"
                 >
                   {[
-                    { icon: BookOpen, label: "Application submitted",   color: "bg-blue-50 border-blue-200 text-blue-700" },
-                    { icon: Shield,   label: "Under admin review",       color: "bg-amber-50 border-amber-200 text-amber-700" },
-                    { icon: Check,    label: "Email when approved",      color: "bg-green-50 border-green-200 text-green-700" },
+                    { icon: BookOpen, label: "Application submitted", color: "bg-blue-50 border-blue-200 text-blue-700" },
+                    { icon: Shield, label: "Under admin review", color: "bg-amber-50 border-amber-200 text-amber-700" },
+                    { icon: Check, label: "Email when approved", color: "bg-green-50 border-green-200 text-green-700" },
                   ].map(({ icon: Icon, label, color }) => (
                     <div key={label} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-medium ${color}`}>
                       <Icon className="w-5 h-5" />
