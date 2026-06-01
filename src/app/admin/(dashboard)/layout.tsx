@@ -6,6 +6,7 @@ import { AdminAuthContext } from "../_context/AdminAuthContext";
 import { AdminSidebar } from "./_components/AdminSidebar";
 import { useAdminAuthStore } from "../useAdminAuthStore";
 import { ADMIN_API } from "../utils";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 export default function DashboardLayout({
   children,
@@ -90,9 +91,15 @@ export default function DashboardLayout({
         isSuperAdmin: admin.is_super_admin,
       }}
     >
-      <div className="min-h-screen bg-ventsafe-background flex">
+      <div className="min-h-screen bg-ventsafe-background flex relative">
         <AdminSidebar pendingCount={pending} />
-        <main className="flex-1 overflow-y-auto min-w-0 lg:pt-0 pt-16">
+        
+        {/* Global Theme Toggle for Admin */}
+        <div className="fixed top-4 right-4 z-40 lg:absolute lg:top-6 lg:right-8 lg:z-50 bg-ventsafe-card border border-ventsafe-border/40 rounded-full shadow-sm">
+          <ThemeToggle />
+        </div>
+
+        <main className="flex-1 overflow-y-auto min-w-0 lg:pt-0 pt-16 relative">
           {children}
         </main>
       </div>

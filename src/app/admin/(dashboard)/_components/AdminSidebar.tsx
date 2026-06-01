@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { useAdminAuth } from "../../_context/AdminAuthContext";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 interface SidebarProps {
   pendingCount: number;
@@ -162,11 +161,6 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
           );
         })}
       </nav>
-
-      {/* Theme Toggle */}
-      <div className="p-3 border-t border-ventsafe-border/30 flex justify-center">
-        <ThemeToggle />
-      </div>
 
       {/* Logout */}
       <div className="p-3 border-t border-ventsafe-border/30">

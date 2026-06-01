@@ -29,11 +29,11 @@ export default function DashboardClient() {
   useEffect(() => { load(); }, []);
 
   const statCards = stats ? [
-    { label: "Total Students",     value: stats.totalStudents,          icon: Users,        bg: "bg-blue-50",    border: "border-blue-200",    text: "text-blue-600",    iconBg: "bg-blue-100"    },
-    { label: "Active Counsellors", value: stats.totalCounsellors,       icon: GraduationCap,bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-600", iconBg: "bg-emerald-100" },
-    { label: "Pending Review",     value: stats.pendingApplications,    icon: Clock,        bg: "bg-amber-50",   border: "border-amber-200",   text: "text-amber-600",   iconBg: "bg-amber-100"   },
-    { label: "Approved",           value: stats.approvedApplications,   icon: CheckCircle2, bg: "bg-green-50",   border: "border-green-200",   text: "text-green-600",   iconBg: "bg-green-100"   },
-    { label: "Rejected",           value: stats.rejectedApplications,   icon: XCircle,      bg: "bg-red-50",     border: "border-red-200",     text: "text-red-600",     iconBg: "bg-red-100"     },
+    { label: "Total Students",     value: stats.totalStudents,          icon: Users,        bg: "bg-ventsafe-card", border: "border-ventsafe-border/40", text: "text-blue-500",    iconBg: "bg-blue-500/10" },
+    { label: "Active Counsellors", value: stats.totalCounsellors,       icon: GraduationCap,bg: "bg-ventsafe-card", border: "border-ventsafe-border/40", text: "text-emerald-500", iconBg: "bg-emerald-500/10" },
+    { label: "Pending Review",     value: stats.pendingApplications,    icon: Clock,        bg: "bg-ventsafe-card", border: "border-ventsafe-border/40", text: "text-amber-500",   iconBg: "bg-amber-500/10" },
+    { label: "Approved",           value: stats.approvedApplications,   icon: CheckCircle2, bg: "bg-ventsafe-card", border: "border-ventsafe-border/40", text: "text-green-500",   iconBg: "bg-green-500/10" },
+    { label: "Rejected",           value: stats.rejectedApplications,   icon: XCircle,      bg: "bg-ventsafe-card", border: "border-ventsafe-border/40", text: "text-red-500",     iconBg: "bg-red-500/10" },
   ] : [];
 
   return (
@@ -92,11 +92,11 @@ export default function DashboardClient() {
           whileHover={{ scale: 1.005 }}
           whileTap={{ scale: 0.998 }}
           onClick={() => router.push("/admin/applications")}
-          className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between mb-6 cursor-pointer text-left"
+          className="w-full bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center justify-between mb-6 cursor-pointer text-left"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
             </div>
             <div>
               <p className="text-sm font-semibold text-ventsafe-foreground">
