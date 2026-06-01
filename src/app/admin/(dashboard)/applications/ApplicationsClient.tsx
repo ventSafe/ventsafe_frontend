@@ -105,10 +105,10 @@ function ApplicationModal({
         exit={{ opacity: 0, scale: 0.96, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 28 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white border border-ventsafe-border/40 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl"
+        className="bg-ventsafe-card border border-ventsafe-border/40 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-ventsafe-border/30 sticky top-0 bg-white rounded-t-2xl z-10">
+        <div className="flex items-center justify-between p-6 border-b border-ventsafe-border/30 sticky top-0 bg-ventsafe-card rounded-t-2xl z-10">
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -304,7 +304,7 @@ function ApplicationModal({
                     whileTap={{ scale: 0.97 }}
                     onClick={approve}
                     disabled={loading}
-                    className="flex-1 bg-ventsafe-foreground text-white py-3 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 cursor-pointer disabled:opacity-60 shadow-md shadow-ventsafe-foreground/20 flex items-center justify-center gap-2"
+                    className="flex-1 bg-ventsafe-foreground text-ventsafe-background py-3 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 cursor-pointer disabled:opacity-60 shadow-md shadow-ventsafe-foreground/20 flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4" />
                     {loading ? "Approving..." : "Approve"}
@@ -388,7 +388,7 @@ export default function ApplicationsClient() {
             onClick={() => setFilter(key)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
               filter === key
-                ? "bg-ventsafe-foreground text-white shadow-md shadow-ventsafe-foreground/20"
+                ? "bg-ventsafe-foreground text-ventsafe-background shadow-md shadow-ventsafe-foreground/20"
                 : "bg-ventsafe-foreground/8 text-ventsafe-foreground/60 hover:text-ventsafe-foreground hover:bg-ventsafe-foreground/15"
             }`}
           >
@@ -431,7 +431,7 @@ export default function ApplicationsClient() {
               whileHover={{ scale: 1.005 }}
               whileTap={{ scale: 0.998 }}
               onClick={() => setSelected(app)}
-              className="w-full bg-white border border-ventsafe-border/40 hover:border-ventsafe-foreground/30 rounded-2xl p-5 text-left transition-all cursor-pointer group shadow-sm hover:shadow-md"
+              className="w-full bg-ventsafe-card border border-ventsafe-border/40 hover:border-ventsafe-foreground/30 rounded-2xl p-5 text-left transition-all cursor-pointer group shadow-sm hover:shadow-md"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">

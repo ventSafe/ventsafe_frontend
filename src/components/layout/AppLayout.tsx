@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/shared/LogoutModal";
 import { ManiLifebuoy } from "@/components/shared/ManiLifebuoy";
 import { PanicButton } from "@/components/shared/PanicButton";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/vent-space", label: "Home", icon: <Home size={16} /> },
@@ -460,6 +461,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               role={userRole}
               onSwitchRole={handleSwitchRoleClick}
             />
+
+            <ThemeToggle />
 
             <div className="relative" ref={dropdownRef}>
               <button

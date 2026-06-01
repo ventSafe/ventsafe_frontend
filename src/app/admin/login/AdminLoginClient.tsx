@@ -64,7 +64,7 @@ export default function AdminLoginClient() {
           <Logo />
         </div>
 
-        <div className="bg-white border border-ventsafe-border/40 rounded-2xl shadow-lg shadow-ventsafe-foreground/5 p-8">
+        <div className="bg-ventsafe-card border border-ventsafe-border/40 rounded-2xl shadow-lg shadow-ventsafe-foreground/5 p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-ventsafe-foreground flex items-center justify-center shrink-0">
               <Shield className="w-5 h-5 text-white" />
@@ -139,7 +139,7 @@ export default function AdminLoginClient() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={loading}
-              className="w-full bg-ventsafe-foreground text-white py-3 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60 shadow-md shadow-ventsafe-foreground/20 mt-2"
+              className="w-full bg-ventsafe-foreground text-ventsafe-background py-3 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60 shadow-md shadow-ventsafe-foreground/20 mt-2"
             >
               {loading ? "Signing in..." : "Sign In"}
             </motion.button>

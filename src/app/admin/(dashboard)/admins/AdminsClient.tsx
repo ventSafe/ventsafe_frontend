@@ -134,7 +134,7 @@ export default function AdminsClient() {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowCreate(!showCreate)}
-            className="flex items-center gap-2 bg-ventsafe-foreground text-white px-4 py-2 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 cursor-pointer shadow-md shadow-ventsafe-foreground/20"
+            className="flex items-center gap-2 bg-ventsafe-foreground text-ventsafe-background px-4 py-2 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 cursor-pointer shadow-md shadow-ventsafe-foreground/20"
           >
             <UserPlus className="w-4 h-4" />
             New Admin
@@ -153,7 +153,7 @@ export default function AdminsClient() {
           >
             <form
               onSubmit={createAdmin}
-              className="bg-white border border-ventsafe-border/40 rounded-2xl p-6 shadow-sm"
+              className="bg-ventsafe-card border border-ventsafe-border/40 rounded-2xl p-6 shadow-sm"
             >
               <div className="flex items-center gap-2 mb-5">
                 <UserPlus className="w-4 h-4 text-ventsafe-foreground" />
@@ -231,7 +231,7 @@ export default function AdminsClient() {
                   whileTap={{ scale: 0.97 }}
                   type="submit"
                   disabled={formLoading}
-                  className="flex-1 bg-ventsafe-foreground text-white py-2.5 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 cursor-pointer disabled:opacity-60 shadow-md shadow-ventsafe-foreground/20"
+                  className="flex-1 bg-ventsafe-foreground text-ventsafe-background py-2.5 rounded-ventsafe-sm text-sm font-semibold hover:opacity-90 cursor-pointer disabled:opacity-60 shadow-md shadow-ventsafe-foreground/20"
                 >
                   {formLoading ? "Creating..." : "Create Admin"}
                 </motion.button>
@@ -264,7 +264,7 @@ export default function AdminsClient() {
                 stiffness: 260,
                 damping: 24,
               }}
-              className={`bg-white border rounded-2xl p-5 shadow-sm ${
+              className={`bg-ventsafe-card border rounded-2xl p-5 shadow-sm ${
                 !admin.is_active
                   ? "opacity-50 border-ventsafe-border/20"
                   : "border-ventsafe-border/40"

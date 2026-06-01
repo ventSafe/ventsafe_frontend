@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 import { useAdminAuth } from "../../_context/AdminAuthContext";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 interface SidebarProps {
   pendingCount: number;
@@ -133,7 +134,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
               title={collapsed ? label : undefined}
               className={`w-full flex items-center gap-3 px-3 py-3 rounded-ventsafe-sm transition-all cursor-pointer text-left group ${
                 active
-                  ? "bg-ventsafe-foreground text-white shadow-md shadow-ventsafe-foreground/20"
+                  ? "bg-ventsafe-foreground text-ventsafe-background shadow-md shadow-ventsafe-foreground/20"
                   : "text-ventsafe-foreground/60 hover:text-ventsafe-foreground hover:bg-ventsafe-foreground/5"
               }`}
             >
@@ -162,12 +163,17 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
         })}
       </nav>
 
+      {/* Theme Toggle */}
+      <div className="p-3 border-t border-ventsafe-border/30 flex justify-center">
+        <ThemeToggle />
+      </div>
+
       {/* Logout */}
       <div className="p-3 border-t border-ventsafe-border/30">
         <button
           onClick={logout}
           title={collapsed ? "Sign Out" : undefined}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-ventsafe-sm text-ventsafe-foreground/40 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-ventsafe-sm text-ventsafe-foreground/40 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
         >
           <LogOut className="w-4 h-4 shrink-0" />
           {!collapsed && <span className="text-sm font-medium">Sign Out</span>}
@@ -182,7 +188,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
       <motion.aside
         animate={{ width: collapsed ? 64 : 256 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="hidden lg:flex flex-col bg-white border-r border-ventsafe-border/40 shrink-0 overflow-hidden h-screen sticky top-0 relative"
+        className="hidden lg:flex flex-col bg-ventsafe-card border-r border-ventsafe-border/40 shrink-0 overflow-hidden h-screen sticky top-0 relative"
       >
         {renderNavContent()}
       </motion.aside>
@@ -190,7 +196,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white border border-ventsafe-border/40 rounded-xl flex items-center justify-center shadow-md cursor-pointer"
+        className="lg:hidden fixed top-4 left-4 z-40 w-10 h-10 bg-ventsafe-card border border-ventsafe-border/40 rounded-xl flex items-center justify-center shadow-md cursor-pointer"
       >
         <Menu className="w-4 h-4 text-ventsafe-foreground" />
       </button>
@@ -211,7 +217,7 @@ export function AdminSidebar({ pendingCount }: SidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-ventsafe-border/40 z-50 lg:hidden"
+              className="fixed left-0 top-0 bottom-0 w-64 bg-ventsafe-card border-r border-ventsafe-border/40 z-50 lg:hidden"
             >
               {renderNavContent()}
             </motion.aside>

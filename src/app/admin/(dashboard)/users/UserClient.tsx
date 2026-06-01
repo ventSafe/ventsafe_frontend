@@ -131,7 +131,7 @@ export default function UsersClient() {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none bg-white border border-ventsafe-foreground/15 text-ventsafe-foreground text-sm px-4 py-2 pr-8 rounded-ventsafe-sm focus:outline-none focus:border-ventsafe-foreground cursor-pointer transition-colors hover:border-ventsafe-foreground/30"
+        className="appearance-none bg-ventsafe-card border border-ventsafe-foreground/15 text-ventsafe-foreground text-sm px-4 py-2 pr-8 rounded-ventsafe-sm focus:outline-none focus:border-ventsafe-foreground cursor-pointer transition-colors hover:border-ventsafe-foreground/30"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -170,7 +170,7 @@ export default function UsersClient() {
       </div>
 
       {/* Search + Filters */}
-      <div className="bg-white border border-ventsafe-border/40 rounded-2xl p-4 mb-6 space-y-4">
+      <div className="bg-ventsafe-card border border-ventsafe-border/40 rounded-2xl p-4 mb-6 space-y-4">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ventsafe-foreground/30" />
@@ -269,7 +269,7 @@ export default function UsersClient() {
                 onClick={() =>
                   setSelectedUser(selectedUser?.id === user.id ? null : user)
                 }
-                className={`w-full bg-white border rounded-2xl p-5 text-left transition-all cursor-pointer group shadow-sm hover:shadow-md ${
+                className={`w-full bg-ventsafe-card border rounded-2xl p-5 text-left transition-all cursor-pointer group shadow-sm hover:shadow-md ${
                   selectedUser?.id === user.id
                     ? "border-ventsafe-foreground/40"
                     : "border-ventsafe-border/40 hover:border-ventsafe-foreground/20"
