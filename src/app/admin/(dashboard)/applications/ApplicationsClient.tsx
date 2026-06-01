@@ -374,7 +374,7 @@ export default function ApplicationsClient() {
         </div>
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={load}
+          onClick={() => load()}
           className="flex items-center gap-2 text-sm text-ventsafe-foreground/50 hover:text-ventsafe-foreground border border-ventsafe-foreground/15 px-3 py-2 rounded-ventsafe-sm hover:bg-ventsafe-foreground/5 transition-all cursor-pointer"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
