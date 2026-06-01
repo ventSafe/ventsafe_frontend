@@ -89,7 +89,7 @@ function StudentMoodSlider({ token, initialScore = 50 }: StudentMoodSliderProps)
   );
 
   return (
-    <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+    <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
       <p className="text-sm font-semibold text-ventsafe-foreground mb-3">
         How Are You Today?
       </p>
@@ -124,7 +124,7 @@ function StudentMoodSlider({ token, initialScore = 50 }: StudentMoodSliderProps)
           }
           className="w-full h-2 rounded-full appearance-none cursor-pointer"
           style={{
-            background: `linear-gradient(to right, #000562 ${sliderValue}%, #e5e7f0 ${sliderValue}%)`,
+            background: `linear-gradient(to right, var(--color-ventsafe-navy) ${sliderValue}%, var(--color-ventsafe-muted) ${sliderValue}%)`,
           }}
         />
 
@@ -185,7 +185,7 @@ function CounsellorMoodFeed({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+      <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
         <p className="text-sm font-semibold text-ventsafe-foreground mb-2">
           Student Moods
         </p>
@@ -203,7 +203,7 @@ function CounsellorMoodFeed({ token }: { token: string }) {
 
   if (moods.length === 0) {
     return (
-      <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+      <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
         <p className="text-sm font-semibold text-ventsafe-foreground mb-1">
           Student Moods
         </p>
@@ -215,7 +215,7 @@ function CounsellorMoodFeed({ token }: { token: string }) {
   }
 
   return (
-    <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+    <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
       <p className="text-sm font-semibold text-ventsafe-foreground mb-3">
         Student Moods
       </p>

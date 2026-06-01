@@ -333,12 +333,12 @@ export default function VentSpacePage() {
             {/* ── Communities Banner (Point 8) ──
                 Opens /coming-soon in a new tab when clicked.
             ── */}
-            <div className="bg-gradient-to-br from-ventsafe-navy to-ventsafe-accent text-white rounded-ventsafe-md p-5 space-y-2">
-              <span className="text-xl">🌐</span>
-              <h3 className="font-bold text-sm leading-tight">
+            <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-5 space-y-2 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl pointer-events-none">🌐</div>
+              <h3 className="font-bold text-sm leading-tight text-ventsafe-foreground relative z-10">
                 View Different Communities on VentSafe
               </h3>
-              <p className="text-xs opacity-70 leading-relaxed">
+              <p className="text-xs text-ventsafe-foreground/60 leading-relaxed relative z-10">
                 Connect with others going through similar experiences.
               </p>
               {/* Point 8: opens /coming-soon in new tab */}
@@ -346,7 +346,7 @@ export default function VentSpacePage() {
                 href="/coming-soon"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full py-2 bg-ventsafe-card text-ventsafe-foreground rounded-ventsafe-sm text-xs font-semibold hover:opacity-90 transition-opacity mt-1 text-center"
+                className="block w-full py-2.5 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-sm text-xs font-semibold hover:opacity-90 transition-opacity mt-3 text-center relative z-10 shadow-sm"
               >
                 Explore Communities
               </a>
