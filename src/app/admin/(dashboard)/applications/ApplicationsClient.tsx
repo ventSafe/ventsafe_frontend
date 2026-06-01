@@ -29,7 +29,7 @@ function ApplicationModal({
 }: {
   app: Application;
   onClose: () => void;
-  onStatusChange: (id: string, newStatus: string) => void;
+  onStatusChange: (id: string, newStatus: "pending" | "approved" | "rejected") => void;
 }) {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
