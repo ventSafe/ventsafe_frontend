@@ -25,11 +25,11 @@ type Filter = "pending" | "approved" | "rejected" | "all";
 function ApplicationModal({
   app,
   onClose,
-  onRefresh,
+  onStatusChange,
 }: {
   app: Application;
   onClose: () => void;
-  onRefresh: () => void;
+  onStatusChange: (id: string, newStatus: string) => void;
 }) {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
@@ -49,7 +49,7 @@ function ApplicationModal({
         setError(data.message);
         return;
       }
-      onRefresh();
+      onStatusChange(app.id, "approved");
       onClose();
     } catch {
       setError("Something went wrong.");
@@ -76,7 +76,7 @@ function ApplicationModal({
         setError(data.message);
         return;
       }
-      onRefresh();
+      onStatusChange(app.id, "rejected");
       onClose();
     } catch {
       setError("Something went wrong.");
@@ -327,8 +327,8 @@ export default function ApplicationsClient() {
   const [selected, setSelected] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(() => {
-    setLoading(true);
+  const load = useCallback((background = false) => {
+    if (!background) setLoading(true);
     const url =
       filter === "all"
         ? `${ADMIN_API}/applications`
@@ -338,7 +338,9 @@ export default function ApplicationsClient() {
       .then((d) => {
         if (d.success) setApps(d.data.applications);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!background) setLoading(false);
+      });
   }, [filter]);
 
   useEffect(() => {
@@ -506,7 +508,16 @@ export default function ApplicationsClient() {
           <ApplicationModal
             app={selected}
             onClose={() => setSelected(null)}
-            onRefresh={load}
+            onStatusChange={(id, newStatus) => {
+              if (filter === "all") {
+                setApps((prev) =>
+                  prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
+                );
+              } else {
+                setApps((prev) => prev.filter((a) => a.id !== id));
+              }
+              load(true); // background refresh
+            }}
           />
         )}
       </AnimatePresence>
