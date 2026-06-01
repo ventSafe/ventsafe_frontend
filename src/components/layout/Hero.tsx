@@ -108,12 +108,12 @@ export function Hero() {
             </h1>
 
             {/* Subheading */}
-            <h2 className="text-ventsafe-tw md:text-ventsafe-des font-medium text-ventsafe-black">
+            <h2 className="text-ventsafe-tw md:text-ventsafe-des font-medium text-ventsafe-foreground/80">
               No Judgment, No Shame, No Stigma
             </h2>
 
             {/* Description */}
-            <p className="text-ventsafe-btn-sm md:text-ventsafe-st text-ventsafe-black max-w-2xl mx-auto">
+            <p className="text-ventsafe-btn-sm md:text-ventsafe-st text-ventsafe-foreground/70 max-w-2xl mx-auto">
               Support For Uni Mental Health, 100% Private
             </p>
 
@@ -131,7 +131,7 @@ export function Hero() {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setOpen((v) => !v)}
-                  className="flex items-center justify-center gap-2 bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny font-medium hover:opacity-90 transition-opacity text-ventsafe-btn-sm w-full sm:w-auto cursor-pointer select-none"
+                  className="flex items-center justify-center gap-2 bg-ventsafe-foreground text-ventsafe-background px-4 py-1.5 rounded-ventsafe-tiny font-medium hover:opacity-90 transition-opacity text-ventsafe-btn-sm w-full sm:w-auto cursor-pointer select-none"
                 >
                   Vent Now
                   <motion.span
@@ -153,7 +153,7 @@ export function Hero() {
                         stiffness: 300,
                         damping: 26,
                       }}
-                      className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-72 bg-white border border-ventsafe-border rounded-2xl shadow-xl shadow-ventsafe-foreground/10 overflow-hidden z-50"
+                      className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-72 bg-ventsafe-card border border-ventsafe-border rounded-2xl shadow-xl shadow-ventsafe-foreground/10 overflow-hidden z-50"
                     >
                       <div className="p-2">
                         <AnimatePresence mode="wait">
@@ -231,7 +231,7 @@ export function Hero() {
                   const target = user?.role === "admin" ? "/admin" : "/vent-space";
                   router.push(target);
                 }}
-                className="border border-ventsafe-foreground text-ventsafe-foreground px-4 py-1.5 rounded-ventsafe-tiny font-medium hover:bg-ventsafe-foreground hover:text-ventsafe-primary-foreground transition-colors text-ventsafe-btn-sm w-full sm:w-auto cursor-pointer"
+                className="border border-ventsafe-foreground text-ventsafe-foreground px-4 py-1.5 rounded-ventsafe-tiny font-medium hover:bg-ventsafe-foreground hover:text-ventsafe-background transition-colors text-ventsafe-btn-sm w-full sm:w-auto cursor-pointer"
               >
                 {mounted && isAuthenticated ? "Continue to Platform" : "Vent As Guest"}
               </button>

@@ -189,7 +189,7 @@ export function Header() {
                   <div className="flex items-center gap-2">
                     <Link
                       href={dashboardHref}
-                      className="bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity"
+                      className="bg-ventsafe-foreground text-ventsafe-background px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity"
                     >
                       Go to Platform
                     </Link>
@@ -294,7 +294,7 @@ export function Header() {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setOpen((v) => !v)}
-                    className="bg-ventsafe-foreground text-ventsafe-primary-foreground px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                    className="bg-ventsafe-foreground text-ventsafe-background px-4 py-1.5 rounded-ventsafe-tiny text-ventsafe-btn-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer"
                   >
                     Sign up
                     <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
@@ -375,7 +375,7 @@ export function Header() {
                           <Link 
                             href="/signup" 
                             onClick={() => setMobileMenuOpen(false)} 
-                            className="w-full py-2 text-center text-sm font-medium bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-lg"
+                            className="w-full py-2 text-center text-sm font-medium bg-ventsafe-foreground text-ventsafe-background rounded-lg"
                           >
                             Sign Up
                           </Link>

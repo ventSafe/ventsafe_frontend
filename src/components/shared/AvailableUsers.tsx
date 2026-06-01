@@ -123,7 +123,7 @@ function StudentView({ token }: { token: string }) {
             className="flex flex-col items-center gap-1.5 shrink-0"
           >
             <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-lg font-bold">
+              <div className="w-12 h-12 rounded-full bg-ventsafe-foreground text-ventsafe-background flex items-center justify-center text-lg font-bold">
                 {getInitials(c.anonymous_name)}
               </div>
               <div
@@ -145,7 +145,7 @@ function StudentView({ token }: { token: string }) {
               <button
                 onClick={() => void handleFollow(c.id)}
                 className={`mt-1 text-[9px] px-2 py-0.5 rounded-full font-medium border transition-colors cursor-pointer ${c.is_following
-                    ? "bg-ventsafe-foreground text-white border-ventsafe-foreground"
+                    ? "bg-ventsafe-foreground text-ventsafe-background border-ventsafe-foreground"
                     : "border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy"
                   }`}
               >
@@ -272,14 +272,14 @@ function CounsellorView({ token }: { token: string }) {
       {popup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setPopup(null)} />
-          <div className="relative bg-white rounded-xl shadow-xl p-6 max-w-sm text-center z-10">
-            <button onClick={() => setPopup(null)} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer">
+          <div className="relative bg-ventsafe-card rounded-xl shadow-xl p-6 max-w-sm text-center z-10">
+            <button onClick={() => setPopup(null)} className="absolute top-3 right-3 text-ventsafe-foreground/50 hover:text-ventsafe-foreground cursor-pointer">
               <X size={16} />
             </button>
-            <p className="text-sm text-gray-700 leading-relaxed">{popup}</p>
+            <p className="text-sm text-ventsafe-foreground/75 leading-relaxed">{popup}</p>
             <button
               onClick={() => setPopup(null)}
-              className="mt-4 px-4 py-2 bg-ventsafe-foreground text-white rounded-lg text-sm font-medium cursor-pointer"
+              className="mt-4 px-4 py-2 bg-ventsafe-foreground text-ventsafe-background rounded-lg text-sm font-medium cursor-pointer"
             >
               OK
             </button>

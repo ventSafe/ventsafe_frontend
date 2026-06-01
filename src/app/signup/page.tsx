@@ -259,10 +259,10 @@ export default function SignupPage() {
                 exit={{ opacity: 0, y: -20 }}
               >
                 <div className="text-center mb-8">
-                  <h1 className="text-ventsafe-sub-heading font-bold text-ventsafe-black mb-3">
+                  <h1 className="text-ventsafe-sub-heading font-bold text-ventsafe-foreground mb-3">
                     {existsInDb ? "Welcome back" : <span>Create Your <span className="text-ventsafe-foreground">Anonymous Key</span></span>}
                   </h1>
-                  <p className="text-sm text-ventsafe-black mb-1">
+                  <p className="text-sm text-ventsafe-foreground/80 mb-1">
                     Generate a{" "}
                     <span className="font-bold text-ventsafe-foreground">
                       Secure
@@ -289,7 +289,7 @@ export default function SignupPage() {
                           setGender(g);
                           localStorage.setItem("ventsafe-signup-gender", g);
                         }}
-                        className={`px-6 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer capitalize ${gender === g ? "bg-ventsafe-foreground text-white border-ventsafe-foreground" : "bg-transparent text-ventsafe-foreground border-ventsafe-foreground/40 hover:border-ventsafe-foreground"}`}
+                        className={`px-6 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer capitalize ${gender === g ? "bg-ventsafe-foreground text-ventsafe-background border-ventsafe-foreground" : "bg-transparent text-ventsafe-foreground border-ventsafe-foreground/40 hover:border-ventsafe-foreground"}`}
                       >
                         {g}
                       </button>
@@ -312,7 +312,7 @@ export default function SignupPage() {
                     />
                     <label
                       htmlFor="agreeToTerms"
-                      className="text-sm text-ventsafe-black"
+                      className="text-sm text-ventsafe-foreground/80"
                     >
                       I agree to the{" "}
                       <Link
@@ -337,7 +337,7 @@ export default function SignupPage() {
                         handleNextToPin();
                       }
                     }}
-                    className="bg-ventsafe-foreground text-white px-10 py-2.5 rounded-full font-medium hover:opacity-90 transition-opacity text-ventsafe-st cursor-pointer"
+                    className="bg-ventsafe-foreground text-ventsafe-background px-10 py-2.5 rounded-full font-medium hover:opacity-90 transition-opacity text-ventsafe-st cursor-pointer"
                   >
                     {existsInDb ? "Log in to my Account" : "Next — Set PIN"}
                   </button>
@@ -450,7 +450,7 @@ export default function SignupPage() {
                     className="w-4 h-4 cursor-pointer"
                     style={{ accentColor: "#000562" }}
                   />
-                  <label htmlFor="rememberMe" className="text-sm text-ventsafe-black cursor-pointer select-none">
+                  <label htmlFor="rememberMe" className="text-sm text-ventsafe-foreground/80 cursor-pointer select-none">
                     Remember me on this device
                   </label>
                 </div>

@@ -9,6 +9,14 @@ export function Logo() {
         alt="VentSafe Logo"
         width={100}
         height={100}
+        className="theme-logo-light"
+      />
+      <Image
+        src="/images/logo-white.png"
+        alt="VentSafe Logo"
+        width={100}
+        height={100}
+        className="theme-logo-dark"
       />
     </Link>
   );

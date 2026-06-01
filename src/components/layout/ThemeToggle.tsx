@@ -45,11 +45,11 @@ export function ThemeToggle() {
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-ventsafe-darkBg border border-ventsafe-border dark:border-ventsafe-border/30 rounded-lg shadow-lg z-20 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-40 bg-ventsafe-card border border-ventsafe-border rounded-lg shadow-lg z-20 overflow-hidden">
             <button
               onClick={() => handleThemeChange("light")}
-              className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-ventsafe-muted dark:hover:bg-white/5 transition-colors ${
-                theme === "light" ? "bg-ventsafe-muted dark:bg-white/10" : ""
+              className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-ventsafe-muted transition-colors text-ventsafe-foreground ${
+                theme === "light" ? "bg-ventsafe-muted" : ""
               }`}
             >
               <Sun className="h-4 w-4" />
@@ -57,8 +57,8 @@ export function ThemeToggle() {
             </button>
             <button
               onClick={() => handleThemeChange("dark")}
-              className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-ventsafe-muted dark:hover:bg-white/5 transition-colors ${
-                theme === "dark" ? "bg-ventsafe-muted dark:bg-white/10" : ""
+              className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-ventsafe-muted transition-colors text-ventsafe-foreground ${
+                theme === "dark" ? "bg-ventsafe-muted" : ""
               }`}
             >
               <Moon className="h-4 w-4" />
@@ -66,8 +66,8 @@ export function ThemeToggle() {
             </button>
             <button
               onClick={() => handleThemeChange("system")}
-              className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-ventsafe-muted dark:hover:bg-white/5 transition-colors ${
-                theme === "system" ? "bg-ventsafe-muted dark:bg-white/10" : ""
+              className={`w-full px-4 py-2.5 text-left flex items-center gap-3 hover:bg-ventsafe-muted transition-colors text-ventsafe-foreground ${
+                theme === "system" ? "bg-ventsafe-muted" : ""
               }`}
             >
               <Monitor className="h-4 w-4" />

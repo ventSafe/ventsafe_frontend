@@ -129,7 +129,7 @@ export default function AvailableCounsellorsPage() {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-white border border-ventsafe-border rounded-ventsafe-md p-5 animate-pulse"
+                className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-5 animate-pulse"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-full bg-ventsafe-muted shrink-0" />
@@ -143,7 +143,7 @@ export default function AvailableCounsellorsPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-10 text-center">
+          <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-10 text-center">
             <div className="text-4xl mb-3">🔍</div>
             <p className="text-base font-semibold text-ventsafe-foreground">
               No counsellors found
@@ -162,12 +162,12 @@ export default function AvailableCounsellorsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-white border border-ventsafe-border rounded-ventsafe-md p-5 flex flex-col gap-3"
+                className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-5 flex flex-col gap-3"
               >
                 {/* Avatar + name row */}
                 <div className="flex items-center gap-3">
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-lg font-bold">
+                    <div className="w-12 h-12 rounded-full bg-ventsafe-foreground text-ventsafe-background flex items-center justify-center text-lg font-bold">
                       {(c.anonymous_name || "?").charAt(0)}
                     </div>
                     <div
@@ -233,7 +233,7 @@ export default function AvailableCounsellorsPage() {
                     onClick={() => void handleFollow(c.id)}
                     className={`text-xs px-4 py-1.5 rounded-ventsafe-full font-semibold border transition-colors ${
                       c.is_following
-                        ? "bg-ventsafe-foreground text-white border-ventsafe-foreground hover:opacity-80"
+                        ? "bg-ventsafe-foreground text-ventsafe-background border-ventsafe-foreground hover:opacity-80"
                         : "border-ventsafe-border text-ventsafe-foreground/70 hover:border-ventsafe-navy hover:text-ventsafe-navy"
                     }`}
                   >

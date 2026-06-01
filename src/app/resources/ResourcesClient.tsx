@@ -172,7 +172,7 @@ function WriteArticleModal({
       <motion.div
         initial={{ opacity: 0, scale: 0.97, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="relative w-full max-w-2xl bg-white rounded-ventsafe-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto z-10"
+        className="relative w-full max-w-2xl bg-ventsafe-card rounded-ventsafe-md shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto z-10"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-ventsafe-border/30">
           <h2 className="text-base font-bold text-ventsafe-foreground">
@@ -219,7 +219,7 @@ function WriteArticleModal({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2.5 text-sm focus:outline-none focus:border-ventsafe-navy bg-white capitalize"
+              className="w-full border border-ventsafe-border rounded-ventsafe-sm px-3 py-2.5 text-sm focus:outline-none focus:border-ventsafe-navy bg-ventsafe-card capitalize"
             >
               {WRITE_CATEGORIES.map((c) => (
                 <option key={c} value={c} className="capitalize">
@@ -250,7 +250,7 @@ function WriteArticleModal({
           <button
             onClick={() => void handleSave()}
             disabled={saving || !title.trim() || !content.trim()}
-            className="w-full py-2.5 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-sm font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity"
+            className="w-full py-2.5 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-sm font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
             {saving
               ? "Saving..."
@@ -391,7 +391,7 @@ function ResourceCard({
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white border rounded-ventsafe-md overflow-hidden transition-all ${resource.is_pinned ? "border-ventsafe-navy" : "border-ventsafe-border"
+      className={`bg-ventsafe-card border rounded-ventsafe-md overflow-hidden transition-all ${resource.is_pinned ? "border-ventsafe-navy" : "border-ventsafe-border"
         }`}
     >
       <div className="p-5">
@@ -450,7 +450,7 @@ function ResourceCard({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="absolute right-0 top-full mt-1 w-48 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
+                  className="absolute right-0 top-full mt-1 w-48 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
                 >
                   {isOwn && isCounsellor && (
                     <>
@@ -694,7 +694,7 @@ export default function ResourcesClient() {
     <AppLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         {/* Header */}
-        <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-5 mb-6">
+        <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-5 mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-ventsafe-muted rounded-ventsafe-sm flex items-center justify-center">
@@ -729,7 +729,7 @@ export default function ResourcesClient() {
                     setEditResource(null);
                     setWriteModalOpen(true);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-sm text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-sm text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus size={14} /> Write Article
                 </button>
@@ -744,8 +744,8 @@ export default function ResourcesClient() {
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-ventsafe-full text-xs font-medium border transition-all ${category === cat.value
-                    ? "bg-ventsafe-foreground text-ventsafe-primary-foreground border-ventsafe-foreground"
-                    : "bg-white border-ventsafe-border text-ventsafe-foreground/70 hover:border-ventsafe-navy"
+                    ? "bg-ventsafe-foreground text-ventsafe-background border-ventsafe-foreground"
+                    : "bg-ventsafe-card border-ventsafe-border text-ventsafe-foreground/70 hover:border-ventsafe-navy"
                   }`}
               >
                 <span>{cat.icon}</span>
@@ -761,7 +761,7 @@ export default function ResourcesClient() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white border border-ventsafe-border rounded-ventsafe-md p-5 animate-pulse"
+                className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-5 animate-pulse"
               >
                 <div className="h-5 bg-ventsafe-muted rounded w-2/3 mb-3" />
                 <div className="space-y-2">
@@ -772,7 +772,7 @@ export default function ResourcesClient() {
             ))}
           </div>
         ) : resources.length === 0 ? (
-          <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-10 text-center">
+          <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-10 text-center">
             <BookOpen
               size={32}
               className="mx-auto text-ventsafe-foreground/20 mb-3"
@@ -788,7 +788,7 @@ export default function ResourcesClient() {
             {isCounsellor && (
               <button
                 onClick={() => setWriteModalOpen(true)}
-                className="mt-4 px-5 py-2 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-tiny font-medium text-sm"
+                className="mt-4 px-5 py-2 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-tiny font-medium text-sm"
               >
                 Write first article
               </button>

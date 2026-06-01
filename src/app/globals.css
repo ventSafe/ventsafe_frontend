@@ -200,3 +200,31 @@ summary {
     typewriter 2s steps(40, end),
     blink 0.75s step-end infinite;
 }
+
+/* Theme-aware Logo visibility */
+.theme-logo-light {
+  display: block;
+}
+.theme-logo-dark {
+  display: none;
+}
+
+[data-theme='dark'] .theme-logo-light {
+  display: none;
+}
+[data-theme='dark'] .theme-logo-dark {
+  display: block;
+}
+
+/* Dot-grid background for home page */
+.dot-grid-bg {
+  background-image: radial-gradient(var(--fg-color) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, black 10%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 10%, transparent 100%);
+  opacity: 0.08;
+}
+
+[data-theme='dark'] .dot-grid-bg {
+  opacity: 0.15;
+}

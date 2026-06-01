@@ -166,9 +166,9 @@ export default function VentSpacePage() {
           <div className="space-y-4">
 
             {/* ── Composer (Point 6) ── */}
-            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+            <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
+                <div className="w-9 h-9 rounded-full bg-ventsafe-foreground text-ventsafe-background flex items-center justify-center text-sm font-bold shrink-0">
                   {hasMounted ? anonymousName.charAt(0) : ""}
                 </div>
                 <button
@@ -191,7 +191,7 @@ export default function VentSpacePage() {
             {loading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4 animate-pulse">
+                  <div key={i} className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4 animate-pulse">
                     <div className="flex gap-3 mb-3">
                       <div className="w-9 h-9 rounded-full bg-ventsafe-muted" />
                       <div className="space-y-1.5 flex-1">
@@ -209,7 +209,7 @@ export default function VentSpacePage() {
               </div>
             ) : posts.length === 0 ? (
               /* ── Point 3: Role-aware empty state ── */
-              <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-8 text-center space-y-3">
+              <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-8 text-center space-y-3">
                 <div className="text-4xl">{isCounsellor ? "🌱" : "💬"}</div>
                 <p className="text-base font-semibold text-ventsafe-foreground">
                   {isCounsellor ? "No post yet" : "Nothing here yet"}
@@ -223,7 +223,7 @@ export default function VentSpacePage() {
                   {/* Point 3: CTA text changes per role */}
                   <button
                     onClick={() => setModalOpen(true)}
-                    className="px-5 py-2 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-tiny font-medium text-sm hover:opacity-90 transition-opacity"
+                    className="px-5 py-2 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-tiny font-medium text-sm hover:opacity-90 transition-opacity"
                   >
                     {isCounsellor ? "Motivate a student" : "Start a vent"}
                   </button>
@@ -275,12 +275,12 @@ export default function VentSpacePage() {
 
             {/* ── How Are You Today + Available Users ── */}
             <MoodSection token={token} viewerRole={viewerRole} />
-            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+            <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
               <AvailableUsers token={token} viewerRole={viewerRole} />
             </div>
 
             {/* ── Quick Resources (Point 4) ── */}
-            <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4">
+            <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4">
               <h3 className="text-sm font-bold text-ventsafe-foreground mb-3">
                 Quick Resources
               </h3>
@@ -346,7 +346,7 @@ export default function VentSpacePage() {
                 href="/coming-soon"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full py-2 bg-white text-ventsafe-foreground rounded-ventsafe-sm text-xs font-semibold hover:bg-white/90 transition-colors mt-1 text-center"
+                className="block w-full py-2 bg-ventsafe-card text-ventsafe-foreground rounded-ventsafe-sm text-xs font-semibold hover:opacity-90 transition-opacity mt-1 text-center"
               >
                 Explore Communities
               </a>

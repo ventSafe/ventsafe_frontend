@@ -447,7 +447,7 @@ export default function CounsellorSignupPage() {
                           whileTap={{ scale: 0.95 }}
                           onClick={() => setGender(g)}
                           className={`px-7 py-2 rounded-full text-sm font-semibold border transition-all cursor-pointer capitalize ${gender === g
-                              ? "bg-ventsafe-foreground text-white border-ventsafe-foreground shadow-md shadow-ventsafe-foreground/20"
+                              ? "bg-ventsafe-foreground text-ventsafe-background border-ventsafe-foreground shadow-md shadow-ventsafe-foreground/20"
                               : "bg-transparent text-ventsafe-foreground border-ventsafe-foreground/30 hover:border-ventsafe-foreground"
                             }`}
                         >
@@ -521,7 +521,7 @@ export default function CounsellorSignupPage() {
                         handleNextToPin();
                       }
                     }}
-                    className="bg-ventsafe-foreground text-white px-10 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity text-ventsafe-st cursor-pointer shadow-lg shadow-ventsafe-foreground/25"
+                    className="bg-ventsafe-foreground text-ventsafe-background px-10 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity text-ventsafe-st cursor-pointer shadow-lg shadow-ventsafe-foreground/25"
                   >
                     {existsInDb ? "Log in to my Account" : "Next — Set PIN"}
                   </motion.button>
@@ -681,7 +681,7 @@ export default function CounsellorSignupPage() {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleGenerateKeyPair(false)}
                   disabled={isGenerating}
-                  className="w-full bg-ventsafe-foreground text-white px-8 py-3 rounded-ventsafe-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-70 shadow-md shadow-ventsafe-foreground/20 mt-2"
+                  className="w-full bg-ventsafe-foreground text-ventsafe-background px-8 py-3 rounded-ventsafe-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-70 shadow-md shadow-ventsafe-foreground/20 mt-2"
                 >
                   {isGenerating ? "Generating Identity..." : "Generate Identity"}
                 </motion.button>
@@ -802,7 +802,7 @@ export default function CounsellorSignupPage() {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => router.push("/onboarding/counsellor")}
-                    className="w-full flex items-center justify-center gap-2 bg-ventsafe-foreground text-white px-8 py-3.5 rounded-ventsafe-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-md shadow-ventsafe-foreground/20"
+                    className="w-full flex items-center justify-center gap-2 bg-ventsafe-foreground text-ventsafe-background px-8 py-3.5 rounded-ventsafe-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-md shadow-ventsafe-foreground/20"
                   >
                     <BadgeCheck className="w-5 h-5" />
                     I've Saved My Keys — Continue

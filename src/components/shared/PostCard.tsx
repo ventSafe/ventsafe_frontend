@@ -321,7 +321,7 @@ function CommentItem({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="absolute right-0 top-full mt-1 w-32 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
+                  className="absolute right-0 top-full mt-1 w-32 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
                 >
                   {isOwn && (
                     <>
@@ -671,7 +671,7 @@ export function PostCard({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-ventsafe-border rounded-ventsafe-md overflow-hidden"
+      className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md overflow-hidden"
     >
       {/* Repost header */}
       {post.reposted_by_name && (
@@ -744,7 +744,7 @@ export function PostCard({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                     transition={{ duration: 0.1 }}
-                    className="absolute right-0 top-full mt-1 w-44 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
+                    className="absolute right-0 top-full mt-1 w-44 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
                   >
                     {isOwn ? (
                       <>
@@ -1095,7 +1095,7 @@ export function PostCard({
                       <button
                         onClick={() => void handleSubmitComment()}
                         disabled={!commentText.trim() || submittingComment}
-                        className="px-3 py-1.5 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-full text-xs font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+                        className="px-3 py-1.5 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-full text-xs font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
                       >
                         {replyingTo ? "Reply" : "Post"}
                       </button>

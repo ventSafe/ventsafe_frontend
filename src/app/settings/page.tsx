@@ -4,7 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { ShieldCheck, GraduationCap, User, Bell, Lock } from "lucide-react";
 
-const SECTION = "border border-ventsafe-border rounded-ventsafe-md bg-white overflow-hidden mb-4";
+const SECTION = "border border-ventsafe-border rounded-ventsafe-md bg-ventsafe-card overflow-hidden mb-4";
 const ROW = "flex items-center justify-between px-5 py-4 border-b border-ventsafe-border/40 last:border-0";
 
 export default function SettingsPage() {
@@ -25,7 +25,7 @@ export default function SettingsPage() {
         {/* Profile */}
         <div className={SECTION}>
           <div className="flex items-center gap-3 px-5 py-4 bg-ventsafe-muted/30 border-b border-ventsafe-border/40">
-            <div className="w-12 h-12 rounded-full bg-ventsafe-foreground text-ventsafe-primary-foreground flex items-center justify-center text-lg font-bold shrink-0">
+            <div className="w-12 h-12 rounded-full bg-ventsafe-foreground text-ventsafe-background flex items-center justify-center text-lg font-bold shrink-0">
               {(anonymousName || "A").charAt(0).toUpperCase()}
             </div>
             <div>

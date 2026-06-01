@@ -134,7 +134,7 @@ export function CreateVentModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[820px] bg-white rounded-ventsafe-md shadow-2xl z-50 overflow-hidden max-h-[90vh] overflow-y-auto mx-4"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[820px] bg-ventsafe-card rounded-ventsafe-md shadow-2xl z-50 overflow-hidden max-h-[90vh] overflow-y-auto mx-4"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-ventsafe-border/30">
@@ -193,7 +193,7 @@ export function CreateVentModal({
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 6 }}
-                        className="absolute bottom-full left-0 mb-2 bg-white border border-ventsafe-border rounded-ventsafe-sm shadow-md p-2 flex gap-1 flex-wrap w-48 z-10"
+                        className="absolute bottom-full left-0 mb-2 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-sm shadow-md p-2 flex gap-1 flex-wrap w-48 z-10"
                       >
                         {EMOJIS.map((e) => (
                           <button
@@ -228,7 +228,7 @@ export function CreateVentModal({
                       onClick={() => setCategory(cat.value)}
                       className={`px-3 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer ${category === cat.value
                         ? cat.color + " ring-2 ring-offset-1 ring-current"
-                        : "bg-white border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy"
+                        : "bg-ventsafe-card border-ventsafe-border text-ventsafe-foreground/60 hover:border-ventsafe-navy"
                         }`}
                     >
                       {cat.label}
@@ -256,7 +256,7 @@ export function CreateVentModal({
                 <div className="relative">
                   <button
                     onClick={() => setPrivacyOpen((o) => !o)}
-                    className="w-full flex items-center justify-between px-4 py-3 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors bg-white"
+                    className="w-full flex items-center justify-between px-4 py-3 border border-ventsafe-border rounded-ventsafe-md hover:border-ventsafe-navy transition-colors bg-ventsafe-card"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-ventsafe-navy">
@@ -283,7 +283,7 @@ export function CreateVentModal({
                         initial={{ opacity: 0, y: -4 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
-                        className="absolute top-full left-0 right-0 mt-1 bg-white border border-ventsafe-border rounded-ventsafe-md shadow-lg z-10 overflow-hidden"
+                        className="absolute top-full left-0 right-0 mt-1 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md shadow-lg z-10 overflow-hidden"
                       >
                         {privacyOptions.map((opt) => (
                           <button
@@ -324,7 +324,7 @@ export function CreateVentModal({
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !content.trim()}
-                className="w-full py-3 bg-ventsafe-foreground text-ventsafe-primary-foreground rounded-ventsafe-md font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity cursor-pointer"
+                className="w-full py-3 bg-ventsafe-foreground text-ventsafe-background rounded-ventsafe-md font-semibold text-sm disabled:opacity-40 hover:opacity-90 transition-opacity cursor-pointer"
               >
                 {submitting ? "Posting..." : isCounsellor ? "Share" : "Vent"}
               </button>

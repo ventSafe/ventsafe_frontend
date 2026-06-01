@@ -4,9 +4,13 @@ import { Hero } from "@/components/layout/Hero";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-ventsafe-background transition-colors">
+    <div className="min-h-screen bg-ventsafe-background transition-colors relative overflow-hidden">
+      {/* Background Dot Grid */}
+      <div 
+        className="dot-grid-bg fixed inset-0 z-0 pointer-events-none"
+      />
       <Header />
-      <main>
+      <main className="relative z-10">
         <Hero />
       </main>
       <Footer />

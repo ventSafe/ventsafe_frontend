@@ -239,7 +239,7 @@ function CounsellorLoginContent() {
             <form onSubmit={handleLogin} className="space-y-6 flex flex-col items-center">
 
               {isRecognized ? (
-                <div className="w-full max-w-xs flex flex-col items-center bg-white border border-ventsafe-border/50 rounded-xl p-6 shadow-sm mb-2">
+                <div className="w-full max-w-xs flex flex-col items-center bg-ventsafe-card border border-ventsafe-border/50 rounded-xl p-6 shadow-sm mb-2">
                   <div className="w-16 h-16 rounded-full bg-ventsafe-foreground/10 flex items-center justify-center mb-4">
                     <UserIcon className="w-8 h-8 text-ventsafe-foreground" />
                   </div>
