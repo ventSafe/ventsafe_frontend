@@ -226,7 +226,7 @@ export function SanctuaryUI() {
         if (data.session) {
           const sessionId = data.session.id;
           setSessions(useChatStore.getState().sessions.map((sess: any) => 
-            sess.id === s.id ? { ...sess, id: sessionId, target_user_id: undefined } : sess
+            sess.id === s.id ? { ...sess, id: sessionId, other_user_id: sess.target_user_id, target_user_id: undefined } : sess
           ));
           setActiveSession(sessionId);
         }
