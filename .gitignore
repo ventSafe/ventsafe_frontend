@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local docs (keep off GitHub)
+WIREFRAME_GUIDE.md
+*.docx
+*.py
+*.pyc
+__pycache__/
