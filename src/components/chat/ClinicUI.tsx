@@ -76,9 +76,9 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-        className="relative bg-white border border-slate-200 rounded-2xl p-8 w-full max-w-sm shadow-2xl"
+        className="relative bg-ventsafe-card border border-ventsafe-border rounded-2xl p-8 w-full max-w-sm shadow-2xl"
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+        <button onClick={onClose} className="absolute top-4 right-4 text-ventsafe-muted hover:text-ventsafe-foreground/70 transition-colors">
           <X size={20} />
         </button>
         <div className="flex flex-col items-center gap-4">
@@ -86,8 +86,8 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
             <ShieldCheck size={24} className="text-indigo-600" />
           </div>
           <div className="text-center">
-            <h2 className="text-xl font-bold text-slate-900 mb-1">Unlock Clinical Suite</h2>
-            <p className="text-sm text-slate-500 leading-relaxed">
+            <h2 className="text-xl font-bold text-ventsafe-foreground mb-1">Unlock Clinical Suite</h2>
+            <p className="text-sm text-ventsafe-muted leading-relaxed">
               Enter your <span className="text-indigo-600 font-semibold">4-digit registration PIN</span> to
               access sensitive chat data and private observations.
             </p>
@@ -103,7 +103,7 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
                 value={d}
                 onChange={(e) => handleDigit(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(e, i)}
-                className="w-12 h-12 text-center text-2xl font-bold bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all"
+                className="w-12 h-12 text-center text-2xl font-bold bg-ventsafe-muted border border-ventsafe-border rounded-lg text-ventsafe-foreground focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all"
               />
             ))}
           </div>
@@ -115,7 +115,7 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
           <button
             onClick={handleUnlock}
             disabled={loading || pin.join("").length < 4}
-            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98]"
+            className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-ventsafe-muted text-white font-semibold py-3 rounded-xl transition-all shadow-lg active:scale-[0.98]"
           >
             {loading ? <Loader2 className="animate-spin mx-auto" size={20} /> : "Unlock Workspace"}
           </button>
@@ -133,23 +133,23 @@ function InsightsModal({ insights, onClose }: { insights: FollowerInsights | nul
     >
       <motion.div
         initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-        className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-slate-100"
+        className="bg-ventsafe-card rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-ventsafe-border"
       >
         <div className="flex justify-between items-center mb-6">
-          <h3 className="font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="font-bold text-ventsafe-foreground flex items-center gap-2">
             <BarChart3 size={18} className="text-indigo-600" />
             Follower Insights
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+          <button onClick={onClose} className="text-ventsafe-muted hover:text-ventsafe-foreground/70"><X size={20} /></button>
         </div>
 
         {!insights ? (
           <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-600" /></div>
         ) : (
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <p className="text-xs text-slate-500 font-medium uppercase mb-1">Total Followers</p>
-              <p className="text-3xl font-black text-slate-900">{insights.total_followers}</p>
+            <div className="p-4 bg-ventsafe-muted rounded-xl border border-ventsafe-border">
+              <p className="text-xs text-ventsafe-muted font-medium uppercase mb-1">Total Followers</p>
+              <p className="text-3xl font-black text-ventsafe-foreground">{insights.total_followers}</p>
             </div>
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <p className="text-xs text-emerald-600 font-medium uppercase mb-1">Online Now</p>
@@ -157,7 +157,7 @@ function InsightsModal({ insights, onClose }: { insights: FollowerInsights | nul
             </div>
           </div>
         )}
-        <p className="text-[10px] text-slate-400 mt-6 text-center leading-relaxed">
+        <p className="text-[10px] text-ventsafe-muted mt-6 text-center leading-relaxed">
           Follower insights are aggregated and anonymized. You cannot see individual student identities unless they initiate a chat.
         </p>
       </motion.div>
@@ -176,16 +176,16 @@ function BroadcastModal({ onClose, onSend }: { onClose: () => void, onSend: (tex
     >
       <motion.div
         initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-100"
+        className="bg-ventsafe-card rounded-2xl p-6 w-full max-w-md shadow-2xl border border-ventsafe-border"
       >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="font-bold text-ventsafe-foreground flex items-center gap-2">
             <Megaphone size={18} className="text-amber-500" />
             Broadcast professional Tip
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
+          <button onClick={onClose} className="text-ventsafe-muted hover:text-ventsafe-foreground/70"><X size={20} /></button>
         </div>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-ventsafe-muted mb-4">
           Broadcasts are sent to all your followers' feeds as a "Professional Tip".
           This is a great way to share inspiration or mental health strategies.
         </p>
@@ -194,10 +194,10 @@ function BroadcastModal({ onClose, onSend }: { onClose: () => void, onSend: (tex
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="e.g. Remember to take deep breaths during exam week..."
-          className="w-full h-32 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-50"
+          className="w-full h-32 bg-ventsafe-muted border border-ventsafe-border rounded-xl p-4 text-sm focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-50"
         />
         <div className="mt-4 flex gap-3">
-          <button onClick={onClose} className="flex-1 px-4 py-2 text-sm font-medium text-slate-600">Cancel</button>
+          <button onClick={onClose} className="flex-1 px-4 py-2 text-sm font-medium text-ventsafe-foreground/70">Cancel</button>
           <button
             disabled={!text.trim() || sending}
             onClick={async () => {
@@ -217,7 +217,7 @@ function BroadcastModal({ onClose, onSend }: { onClose: () => void, onSend: (tex
 }
 
 function MessageStatusIcon({ status }: { status?: import("@/store/chatStore").MessageStatus }) {
-  if (!status || status === "sending") return <span className="text-[9px] text-slate-400 ml-1 opacity-60 flex items-center">⏳</span>;
+  if (!status || status === "sending") return <span className="text-[9px] text-ventsafe-muted ml-1 opacity-60 flex items-center">⏳</span>;
   if (status === "failed") return <span className="text-[9px] text-red-400 ml-1 flex items-center">✗</span>;
   if (status === "delivered") {
     return <span className="text-[9px] text-indigo-300 ml-1 inline-flex items-center"><Check size={10} strokeWidth={3} /><Check size={10} strokeWidth={3} className="-ml-1.5" /></span>;
@@ -482,7 +482,7 @@ export function ClinicUI() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans overflow-hidden">
+    <div className="flex h-screen bg-ventsafe-muted text-ventsafe-foreground font-sans overflow-hidden">
 
       {/* ── MODALS ── */}
       <AnimatePresence>
@@ -498,23 +498,23 @@ export function ClinicUI() {
       </AnimatePresence>
 
       {/* ── SIDEBAR ── */}
-      <div className={`w-full md:w-72 bg-white border-r border-slate-200 flex-col shrink-0 shadow-sm z-20 ${activeSessionId ? "hidden md:flex" : "flex"}`}>
-        <div className="p-6 border-b border-slate-100">
-          <button onClick={() => router.push('/vent-space')} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors mb-4">
+      <div className={`w-full md:w-72 bg-ventsafe-card border-r border-ventsafe-border flex-col shrink-0 shadow-sm z-20 ${activeSessionId ? "hidden md:flex" : "flex"}`}>
+        <div className="p-6 border-b border-ventsafe-border">
+          <button onClick={() => router.push('/vent-space')} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-ventsafe-muted hover:text-indigo-600 transition-colors mb-4">
             <ArrowLeft size={14} /> Back to Vent Space
           </button>
-          <h1 className="text-xl font-black tracking-tighter text-slate-900 mb-1">
+          <h1 className="text-xl font-black tracking-tighter text-ventsafe-foreground mb-1">
             VentSafe <span className="text-indigo-600">Clinic</span>
           </h1>
           <div className="flex items-center gap-2 group cursor-pointer" onClick={() => router.push('/profile')}>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Workspace ID: {user?.id.slice(0, 8)}</span>
+            <span className="text-[10px] text-ventsafe-muted font-bold uppercase tracking-widest">Workspace ID: {user?.id.slice(0, 8)}</span>
             <ChevronRight size={10} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
           </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4">
           <div className="px-4 mb-6">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-2">Active Cases</h3>
+            <h3 className="text-[10px] font-bold text-ventsafe-muted uppercase tracking-[0.2em] mb-3 px-2">Active Cases</h3>
             <div className="space-y-1">
               {sessions.map(s => (
                 <button
@@ -522,63 +522,63 @@ export function ClinicUI() {
                   onClick={() => setActiveSession(s.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-all ${activeSessionId === s.id
                     ? 'bg-indigo-50 border border-indigo-100 shadow-sm'
-                    : 'hover:bg-slate-50 text-slate-600'
+                    : 'hover:bg-ventsafe-muted text-ventsafe-foreground/70'
                     }`}
                 >
                   <GradientOrb fingerprint={s.id} size={30} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold truncate ${activeSessionId === s.id ? 'text-indigo-900' : 'text-slate-700'}`}>
+                    <p className={`text-sm font-semibold truncate ${activeSessionId === s.id ? 'text-indigo-900' : 'text-ventsafe-foreground/80'}`}>
                       {s.anonymous_name}
                     </p>
-                    <p className="text-[10px] text-slate-400">{s.is_online ? '🟢 Online' : '⚫ Offline'}</p>
+                    <p className="text-[10px] text-ventsafe-muted">{s.is_online ? '🟢 Online' : '⚫ Offline'}</p>
                   </div>
                   {isTyping[s.id] && <Loader2 className="animate-spin text-indigo-400" size={12} />}
                 </button>
               ))}
               {sessions.length === 0 && (
-                <div className="px-2 py-8 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-xs text-slate-400 italic">No assigned cases yet</p>
+                <div className="px-2 py-8 text-center bg-ventsafe-muted/50 rounded-2xl border border-dashed border-ventsafe-border">
+                  <p className="text-xs text-ventsafe-muted italic">No assigned cases yet</p>
                 </div>
               )}
             </div>
           </div>
-          <div className="px-4 border-t border-slate-100 pt-6 mb-6">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-2">
+          <div className="px-4 border-t border-ventsafe-border pt-6 mb-6">
+            <h3 className="text-[10px] font-bold text-ventsafe-muted uppercase tracking-[0.2em] mb-3 px-2">
               <Users size={12} className="inline mr-1" />Followers ({followers.length})
             </h3>
             <div className="space-y-1">
               {followers.length === 0 ? (
-                <div className="px-2 py-4 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-xs text-slate-400 italic">No followers yet</p>
+                <div className="px-2 py-4 text-center bg-ventsafe-muted/50 rounded-2xl border border-dashed border-ventsafe-border">
+                  <p className="text-xs text-ventsafe-muted italic">No followers yet</p>
                 </div>
               ) : (
                 followers.map(f => (
                   <button
                     key={f.id}
                     onClick={() => handleFollowerClick(f)}
-                    className="w-full text-left px-3 py-2 rounded-xl flex items-center gap-3 hover:bg-slate-50 transition-all cursor-pointer"
+                    className="w-full text-left px-3 py-2 rounded-xl flex items-center gap-3 hover:bg-ventsafe-muted transition-all cursor-pointer"
                   >
                     <GradientOrb fingerprint={f.id} size={26} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-slate-700 truncate">{f.anonymous_name}</p>
-                      <p className="text-[9px] text-slate-400">{f.is_online ? '🟢 Online' : '⚫ Offline'}</p>
+                      <p className="text-xs font-semibold text-ventsafe-foreground/80 truncate">{f.anonymous_name}</p>
+                      <p className="text-[9px] text-ventsafe-muted">{f.is_online ? '🟢 Online' : '⚫ Offline'}</p>
                     </div>
                   </button>
                 ))
               )}
             </div>
           </div>
-          <div className="px-4 border-t border-slate-100 pt-6 space-y-1">
-            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3 px-2">Professional Tools</h3>
+          <div className="px-4 border-t border-ventsafe-border pt-6 space-y-1">
+            <h3 className="text-[10px] font-bold text-ventsafe-muted uppercase tracking-[0.2em] mb-3 px-2">Professional Tools</h3>
             <button
               onClick={fetchInsights}
-              className="w-full flex items-center gap-3 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-3 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 text-sm font-medium text-ventsafe-foreground/70 hover:text-indigo-600 hover:bg-indigo-50 px-3 py-3 rounded-xl transition-all"
             >
               <BarChart3 size={18} /> Follower Insights
             </button>
             <button
               onClick={() => setShowBroadcast(true)}
-              className="w-full flex items-center gap-3 text-sm font-medium text-slate-600 hover:text-amber-600 hover:bg-amber-50 px-3 py-3 rounded-xl transition-all"
+              className="w-full flex items-center gap-3 text-sm font-medium text-ventsafe-foreground/70 hover:text-amber-600 hover:bg-amber-50 px-3 py-3 rounded-xl transition-all"
             >
               <Megaphone size={18} /> Broadcast Tip
             </button>
@@ -586,11 +586,11 @@ export function ClinicUI() {
         </nav>
 
         {/* Profile Section */}
-        <div className="p-4 bg-slate-50/50 border-t border-slate-100 mt-auto">
-          <div className="flex items-center gap-3 p-3 bg-white rounded-2xl shadow-sm border border-slate-100 mb-2">
+        <div className="p-4 bg-ventsafe-muted/50 border-t border-ventsafe-border mt-auto">
+          <div className="flex items-center gap-3 p-3 bg-ventsafe-card rounded-2xl shadow-sm border border-ventsafe-border mb-2">
             <GradientOrb fingerprint={user?.publicKey || "clinic"} size={36} />
             <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{anonymousName}</p>
+              <p className="text-sm font-bold text-ventsafe-foreground truncate">{anonymousName}</p>
               <p className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full inline-block ${user?.role === 'counselor' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'
                 }`}>
                 {user?.role === 'counselor' ? 'Professional' : 'Volunteer'}
@@ -598,10 +598,10 @@ export function ClinicUI() {
             </div>
           </div>
           <div className="flex gap-1">
-            <button onClick={() => router.push('/settings')} className="flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold text-slate-500 hover:text-indigo-600 hover:bg-white rounded-xl transition-all">
+            <button onClick={() => router.push('/settings')} className="flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold text-ventsafe-muted hover:text-indigo-600 hover:bg-ventsafe-card rounded-xl transition-all">
               <Settings size={14} /> Settings
             </button>
-            <button onClick={() => setShowVault(true)} className="flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold text-slate-500 hover:text-indigo-600 hover:bg-white rounded-xl transition-all">
+            <button onClick={() => setShowVault(true)} className="flex-1 flex items-center justify-center gap-2 py-2 text-[11px] font-bold text-ventsafe-muted hover:text-indigo-600 hover:bg-ventsafe-card rounded-xl transition-all">
               <Lock size={14} /> {unlockedPrivKey ? 'Secure' : 'Unlock'}
             </button>
           </div>
@@ -609,21 +609,21 @@ export function ClinicUI() {
       </div>
 
       {/* ── MAIN AREA ── */}
-      <div className={`flex-1 flex-col bg-white relative ${!activeSessionId ? "hidden md:flex" : "flex"}`}>
+      <div className={`flex-1 flex-col bg-ventsafe-card relative ${!activeSessionId ? "hidden md:flex" : "flex"}`}>
         {activeSession ? (
           <>
             {/* Header */}
-            <div className="h-20 border-b border-slate-100 flex items-center px-4 md:px-8 justify-between shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="h-20 border-b border-ventsafe-border flex items-center px-4 md:px-8 justify-between shrink-0 bg-ventsafe-card/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-3 md:gap-4 min-w-0">
-                <button onClick={() => setActiveSession(null)} className="md:hidden p-1.5 -ml-2 text-slate-400 hover:text-slate-700 transition-colors">
+                <button onClick={() => setActiveSession(null)} className="md:hidden p-1.5 -ml-2 text-ventsafe-muted hover:text-ventsafe-foreground/80 transition-colors">
                   <ArrowLeft size={20} />
                 </button>
                 <div className="shrink-0">
                   <GradientOrb fingerprint={activeSession.id} size={44} pulse={activeSession.is_online} />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight truncate">{activeSession.anonymous_name}</h2>
-                  <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
+                  <h2 className="text-lg md:text-xl font-black text-ventsafe-foreground tracking-tight truncate">{activeSession.anonymous_name}</h2>
+                  <p className="text-xs text-ventsafe-muted flex items-center gap-1.5 mt-0.5 truncate">
                     <span className={`shrink-0 w-2 h-2 rounded-full ${activeSession.is_online ? "bg-emerald-500 animate-pulse" : "bg-slate-300"}`} />
                     <span className="truncate">{activeSession.is_online ? "Active Now" : "Currently Offline"}</span>
                     {isTyping[activeSession.id] && <span className="italic text-indigo-500 ml-1 md:ml-2">typing...</span>}
@@ -631,7 +631,7 @@ export function ClinicUI() {
                 </div>
               </div>
               <div className="hidden md:flex items-center gap-3">
-                <div className="px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-widest border border-slate-200">
+                <div className="px-3 py-1.5 rounded-full bg-ventsafe-muted text-ventsafe-foreground/70 text-[10px] font-bold uppercase tracking-widest border border-ventsafe-border">
                   Double-Blind Secure Session
                 </div>
               </div>
@@ -642,8 +642,8 @@ export function ClinicUI() {
               {!unlockedPrivKey ? (
                 <div className="flex flex-col items-center justify-center h-full opacity-40">
                   <Lock size={48} className="text-slate-300 mb-4" />
-                  <h3 className="font-bold text-slate-900">Workspace is Locked</h3>
-                  <p className="text-sm text-slate-500 max-w-xs text-center mt-2">
+                  <h3 className="font-bold text-ventsafe-foreground">Workspace is Locked</h3>
+                  <p className="text-sm text-ventsafe-muted max-w-xs text-center mt-2">
                     Messages are end-to-end encrypted. Use your PIN to unlock the workspace and decrypt the clinical conversation.
                   </p>
                   <button onClick={() => setShowVault(true)} className="mt-6 bg-slate-900 text-white px-6 py-2 rounded-full font-bold text-sm shadow-xl active:scale-95 transition-all">
@@ -661,11 +661,11 @@ export function ClinicUI() {
                       <div className={`max-w-[85%] md:max-w-md px-5 py-3.5 shadow-sm rounded-3xl border ${
                     msg.sender_id === user?.id
                         ? 'bg-indigo-600 text-white rounded-tr-none border-indigo-500'
-                        : 'bg-white text-slate-700 rounded-tl-none border-slate-200'
+                        : 'bg-ventsafe-card text-ventsafe-foreground/80 rounded-tl-none border-ventsafe-border'
                         } ${msg.status === 'failed' ? 'opacity-50' : ''}`}>
                         <p className="text-sm leading-relaxed">{msg.plaintext || (unlockedPrivKey ? "Decrypting..." : "[Encrypted]")}</p>
                         <div className={`flex items-center gap-1 mt-2 ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                          <p className={`text-[9px] font-bold uppercase ${msg.sender_id === user?.id ? 'text-indigo-200' : 'text-slate-400'}`}>
+                          <p className={`text-[9px] font-bold uppercase ${msg.sender_id === user?.id ? 'text-indigo-200' : 'text-ventsafe-muted'}`}>
                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                           {msg.sender_id === user?.id && <MessageStatusIcon status={msg.status} />}
@@ -680,7 +680,7 @@ export function ClinicUI() {
             </div>
 
             {/* Input */}
-            <div className="p-6 border-t border-slate-100 bg-white shrink-0">
+            <div className="p-6 border-t border-ventsafe-border bg-ventsafe-card shrink-0">
               <form onSubmit={handleSendMessage} className="relative group">
                 <input
                   disabled={!unlockedPrivKey}
@@ -694,7 +694,7 @@ export function ClinicUI() {
                     }
                   }}
                   placeholder={unlockedPrivKey ? "Write a professional message..." : "Unlock workspace to participate..."}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-6 pr-16 py-4 text-sm focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all shadow-inner disabled:opacity-50"
+                  className="w-full bg-ventsafe-muted border border-ventsafe-border rounded-2xl pl-6 pr-16 py-4 text-sm focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all shadow-inner disabled:opacity-50"
                 />
                 <button
                   disabled={!unlockedPrivKey || !inputText.trim()}
@@ -707,11 +707,11 @@ export function ClinicUI() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-20 h-20 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-ventsafe-muted border border-ventsafe-border flex items-center justify-center mb-6">
               <ShieldCheck size={40} className="text-indigo-200" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">Select a Clinical Case</h3>
-            <p className="text-sm text-slate-500 max-w-sm mt-3 leading-relaxed">
+            <h3 className="text-xl font-black text-ventsafe-foreground tracking-tight">Select a Clinical Case</h3>
+            <p className="text-sm text-ventsafe-muted max-w-sm mt-3 leading-relaxed">
               Pick a student from the active cases sidebar to initiate a secure, encrypted clinical session.
             </p>
           </div>
@@ -719,9 +719,9 @@ export function ClinicUI() {
       </div>
 
       {/* ── RIGHT PANEL (Private Notes) ── */}
-      <div className="w-80 bg-white border-l border-slate-200 flex flex-col hidden 2xl:flex shrink-0">
-        <div className="h-20 border-b border-slate-100 flex items-center px-6 justify-between shrink-0 bg-slate-50/30">
-          <h3 className="font-black text-slate-900 text-sm tracking-tight flex items-center gap-2">
+      <div className="w-80 bg-ventsafe-card border-l border-ventsafe-border flex flex-col hidden 2xl:flex shrink-0">
+        <div className="h-20 border-b border-ventsafe-border flex items-center px-6 justify-between shrink-0 bg-ventsafe-muted/30">
+          <h3 className="font-black text-ventsafe-foreground text-sm tracking-tight flex items-center gap-2">
             <FileText size={16} className="text-indigo-600" /> Clinical Observations
           </h3>
           <div className="flex gap-1">
@@ -743,7 +743,7 @@ export function ClinicUI() {
               onChange={(e) => setPrivateNote(e.target.value)}
               placeholder="Draft clinical notes, observations, or strategies..."
               disabled={!unlockedPrivKey}
-              className="flex-1 w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 resize-none transition-all disabled:opacity-50 shadow-inner"
+              className="flex-1 w-full bg-ventsafe-muted border border-ventsafe-border rounded-2xl p-5 text-sm focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 resize-none transition-all disabled:opacity-50 shadow-inner"
             />
             <button
               onClick={handleSaveNote}
@@ -756,7 +756,7 @@ export function ClinicUI() {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center opacity-30 grayscale">
             <FileText size={56} className="text-slate-300 mb-4" />
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Select case for notes</p>
+            <p className="text-xs font-bold text-ventsafe-muted uppercase tracking-widest">Select case for notes</p>
           </div>
         )}
       </div>

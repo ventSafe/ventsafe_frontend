@@ -127,7 +127,7 @@ function StudentView({ token }: { token: string }) {
                 {getInitials(c.anonymous_name)}
               </div>
               <div
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${c.is_online ? "bg-green-500" : "bg-gray-300"
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-ventsafe-card ${c.is_online ? "bg-green-500" : "bg-gray-300"
                   }`}
               />
             </div>
@@ -243,7 +243,7 @@ function CounsellorView({ token }: { token: string }) {
                 {getInitials(s.anonymous_name)}
               </div>
               <div
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${s.is_online ? "bg-green-500" : "bg-gray-300"
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-ventsafe-card ${s.is_online ? "bg-green-500" : "bg-gray-300"
                   }`}
               />
             </div>

@@ -10,7 +10,7 @@ const buttonVariants = cva(
       variant: {
         default: 'bg-ventsafe-navy text-white hover:bg-ventsafe-navy/90',
         outline:
-          'border-2 border-ventsafe-navy text-ventsafe-navy hover:bg-ventsafe-navy hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-ventsafe-darkBg',
+          'border-2 border-ventsafe-navy text-ventsafe-navy hover:bg-ventsafe-navy hover:text-white dark:border-ventsafe-card dark:text-white dark:hover:bg-ventsafe-card dark:hover:text-ventsafe-darkBg',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-ventsafe-navy underline-offset-4 hover:underline dark:text-white',
       },

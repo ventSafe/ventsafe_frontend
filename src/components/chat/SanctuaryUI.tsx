@@ -85,7 +85,7 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
         initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
         className="relative bg-[#112240] border border-slate-700 rounded-2xl p-8 w-full max-w-sm shadow-2xl"
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+        <button onClick={onClose} className="absolute top-4 right-4 text-ventsafe-muted hover:text-white transition-colors">
           <X size={20} />
         </button>
         <div className="flex flex-col items-center gap-4">
@@ -94,7 +94,7 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
           </div>
           <div className="text-center">
             <h2 className="text-xl font-bold text-white mb-1">Unlock Your Vault</h2>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="text-sm text-ventsafe-muted leading-relaxed">
               Enter the <span className="text-cyan-300 font-semibold">4-digit PIN</span> you set during{" "}
               <span className="text-cyan-300 font-semibold">registration</span> (the one that encrypts your private key).
             </p>
@@ -122,11 +122,11 @@ function VaultModal({ onUnlock, onClose }: { onUnlock: (key: string) => void; on
           <button
             onClick={handleUnlock}
             disabled={loading || pin.join("").length < 4}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl transition-colors"
+            className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-ventsafe-muted text-white font-semibold py-3 rounded-xl transition-colors"
           >
             {loading ? "Unlocking..." : "Unlock Vault"}
           </button>
-          <p className="text-xs text-slate-500 text-center">
+          <p className="text-xs text-ventsafe-muted text-center">
             🔒 Messages are encrypted end-to-end. Only you can read them.
           </p>
         </div>
@@ -153,7 +153,7 @@ function HowItWorksPanel() {
           <span className="text-2xl mt-0.5">{s.icon}</span>
           <div>
             <p className="font-semibold text-slate-200 text-sm">{s.title}</p>
-            <p className="text-slate-400 text-xs mt-1 leading-relaxed">{s.desc}</p>
+            <p className="text-ventsafe-muted text-xs mt-1 leading-relaxed">{s.desc}</p>
           </div>
         </div>
       ))}
@@ -178,7 +178,7 @@ function TierBadge({ tier }: { tier: string | null }) {
 // ─── Message Status Indicator ────────────────────────────────────────────────
 function MessageStatusIcon({ status }: { status?: MessageStatus }) {
   if (!status || status === "sending") {
-    return <span className="text-[9px] text-slate-500 ml-1 opacity-60 flex items-center">⏳</span>;
+    return <span className="text-[9px] text-ventsafe-muted ml-1 opacity-60 flex items-center">⏳</span>;
   }
   if (status === "failed") {
     return <span className="text-[9px] text-red-400 ml-1 flex items-center">✗ Failed</span>;
@@ -192,7 +192,7 @@ function MessageStatusIcon({ status }: { status?: MessageStatus }) {
   }
   // sent
   return (
-    <span className="text-[9px] text-slate-400 ml-1 flex items-center">
+    <span className="text-[9px] text-ventsafe-muted ml-1 flex items-center">
       <Check size={10} strokeWidth={3} />
     </span>
   );
@@ -461,11 +461,11 @@ export function SanctuaryUI() {
       <div className={`w-full md:w-64 border-r border-[#233554] bg-[#0A192F] flex-col shrink-0 ${activeSessionId ? "hidden md:flex" : "flex"}`}>
         {/* Logo */}
         <div className="p-5 border-b border-[#233554]">
-          <button onClick={() => router.push('/vent-space')} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-slate-500 hover:text-cyan-400 transition-colors mb-4">
+          <button onClick={() => router.push('/vent-space')} className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-ventsafe-muted hover:text-cyan-400 transition-colors mb-4">
             <ArrowLeft size={14} /> Back to Vent Space
           </button>
           <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 tracking-tighter">VentSafe</h1>
-          <p className="text-[10px] text-slate-500 mt-0.5">The Sanctuary</p>
+          <p className="text-[10px] text-ventsafe-muted mt-0.5">The Sanctuary</p>
         </div>
 
         {/* Nav */}
@@ -477,7 +477,7 @@ export function SanctuaryUI() {
                 if (item.id === "explore") { router.push("/available-counsellors"); return; }
                 setPanel(item.id);
               }}
-              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${panel === item.id ? "bg-[#112240] text-cyan-400" : "hover:bg-[#112240]/60 text-slate-400"}`}
+              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${panel === item.id ? "bg-[#112240] text-cyan-400" : "hover:bg-[#112240]/60 text-ventsafe-muted"}`}
             >
               {item.icon} {item.label}
             </button>
@@ -486,10 +486,10 @@ export function SanctuaryUI() {
           {/* Session List (visible in chats panel) */}
           {panel === "chats" && (
             <div className="mt-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 px-3 mb-2">Your Counsellors</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ventsafe-foreground/70 px-3 mb-2">Your Counsellors</p>
               {sessions.length === 0 ? (
                 <div className="px-3 py-4 text-center">
-                  <p className="text-xs text-slate-600 italic">No sessions yet. Follow a counsellor to start.</p>
+                  <p className="text-xs text-ventsafe-foreground/70 italic">No sessions yet. Follow a counsellor to start.</p>
                   <button
                     onClick={() => router.push("/available-counsellors")}
                     className="mt-2 text-xs text-cyan-500 hover:underline flex items-center gap-1 mx-auto"
@@ -523,7 +523,7 @@ export function SanctuaryUI() {
         <div className="p-4 border-t border-[#233554] space-y-2">
           <button
             onClick={() => setShowVault(true)}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-[#112240] transition-colors text-slate-400 text-sm"
+            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-[#112240] transition-colors text-ventsafe-muted text-sm"
           >
             <Lock size={16} />
             {unlockedPrivKey ? <span className="text-green-400 flex items-center gap-1"><CheckCircle size={12} /> Vault Open</span> : "Settings & Vault"}
@@ -532,7 +532,7 @@ export function SanctuaryUI() {
             <GradientOrb fingerprint={user?.publicKey || "default"} size={32} />
             <div className="min-w-0">
               <p className="text-sm font-medium text-slate-300 truncate">{anonymousName}</p>
-              <p className="text-[10px] text-slate-600">Ghost Profile</p>
+              <p className="text-[10px] text-ventsafe-foreground/70">Ghost Profile</p>
             </div>
           </div>
         </div>
@@ -551,14 +551,14 @@ export function SanctuaryUI() {
               className="absolute inset-0 z-10 bg-[#0A192F] overflow-y-auto"
             >
               <div className="p-6">
-                <button onClick={() => setPanel("chats")} className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 text-sm">
+                <button onClick={() => setPanel("chats")} className="flex items-center gap-2 text-ventsafe-muted hover:text-white mb-6 text-sm">
                   <ArrowLeft size={16} /> Back to Chats
                 </button>
                 <h2 className="text-xl font-bold text-white mb-4">Counsellors You Follow</h2>
                 {followedCounsellors.length === 0 ? (
                   <div className="text-center py-12 opacity-50">
-                    <Users size={48} className="text-slate-600 mx-auto mb-4" />
-                    <p className="text-slate-500">You are not following any counsellors yet.</p>
+                    <Users size={48} className="text-ventsafe-foreground/70 mx-auto mb-4" />
+                    <p className="text-ventsafe-muted">You are not following any counsellors yet.</p>
                     <button onClick={() => router.push("/available-counsellors")} className="mt-3 text-cyan-500 text-sm hover:underline">
                       Go to Explore
                     </button>
@@ -580,9 +580,9 @@ export function SanctuaryUI() {
                             <p className="font-semibold text-slate-200">{c.anonymous_name}</p>
                             <TierBadge tier={c.tier} />
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">{c.is_online ? "🟢 Active now" : "⚫ Offline"}</p>
+                          <p className="text-xs text-ventsafe-muted mt-0.5">{c.is_online ? "🟢 Active now" : "⚫ Offline"}</p>
                         </div>
-                        <ChevronRight size={16} className="text-slate-600" />
+                        <ChevronRight size={16} className="text-ventsafe-foreground/70" />
                       </button>
                     ))}
                   </div>
@@ -597,7 +597,7 @@ export function SanctuaryUI() {
               className="absolute inset-0 z-10 bg-[#0A192F] overflow-y-auto"
             >
               <div className="p-6">
-                <button onClick={() => setPanel("chats")} className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 text-sm">
+                <button onClick={() => setPanel("chats")} className="flex items-center gap-2 text-ventsafe-muted hover:text-white mb-6 text-sm">
                   <ArrowLeft size={16} /> Back
                 </button>
                 <HowItWorksPanel />
@@ -611,7 +611,7 @@ export function SanctuaryUI() {
           <>
             {/* Header */}
             <div className="relative z-10 h-20 border-b border-[#233554] flex items-center px-4 md:px-6 gap-3 md:gap-4 bg-[#0a192f]/90 backdrop-blur-md shrink-0">
-              <button onClick={() => setActiveSession(null)} className="md:hidden p-1.5 -ml-2 text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => setActiveSession(null)} className="md:hidden p-1.5 -ml-2 text-ventsafe-muted hover:text-white transition-colors">
                 <ArrowLeft size={20} />
               </button>
               <GradientOrb fingerprint={activeSession.public_key} size={40} pulse={activeSession.is_online} />
@@ -621,7 +621,7 @@ export function SanctuaryUI() {
                   <TierBadge tier={(followedCounsellors.find(c => c.id === activeSession.id)?.tier) ?? null} />
                   <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-cyan-900/50 text-cyan-400 border border-cyan-800">E2E Encrypted</span>
                 </div>
-                <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                <p className="text-xs text-ventsafe-muted flex items-center gap-1 mt-0.5">
                   <span className={`w-2 h-2 rounded-full ${activeSession.is_online ? "bg-green-500" : "bg-slate-500"}`} />
                   {activeSession.is_online ? "Active now" : "Offline"}
                   {isTyping[activeSession.id] && " · Typing..."}
@@ -638,8 +638,8 @@ export function SanctuaryUI() {
             <div className="relative z-10 flex-1 overflow-y-auto p-6 space-y-4">
               {!unlockedPrivKey && (
                 <div className="text-center py-8">
-                  <Lock size={32} className="text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-500 text-sm">Unlock your vault to view messages.</p>
+                  <Lock size={32} className="text-ventsafe-foreground/70 mx-auto mb-3" />
+                  <p className="text-ventsafe-muted text-sm">Unlock your vault to view messages.</p>
                   <button onClick={() => setShowVault(true)} className="mt-3 text-cyan-400 text-sm hover:underline">Unlock now</button>
                 </div>
               )}
@@ -656,7 +656,7 @@ export function SanctuaryUI() {
                   } ${msg.status === "failed" ? "opacity-50" : ""}`}>
                     <p className="text-sm">{msg.plaintext || (unlockedPrivKey ? "Decrypting..." : <span className="blur-sm select-none">Encrypted</span>)}</p>
                     <div className="flex items-center justify-end gap-1 mt-1">
-                      <p className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                      <p className="text-[10px] text-ventsafe-muted">{new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
                       {msg.sender_id === user?.id && <MessageStatusIcon status={msg.status} />}
                     </div>
                     {msg.status === "failed" && (
@@ -688,12 +688,12 @@ export function SanctuaryUI() {
                   }}
                   disabled={!unlockedPrivKey}
                   placeholder={unlockedPrivKey ? "Write a secure message..." : "Unlock vault to send messages..."}
-                  className="flex-1 bg-[#112240] border border-[#233554] rounded-full px-6 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors placeholder:text-slate-600 disabled:opacity-40"
+                  className="flex-1 bg-[#112240] border border-[#233554] rounded-full px-6 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-600 transition-colors placeholder:text-ventsafe-foreground/70 disabled:opacity-40"
                 />
                 <button
                   type="submit"
                   disabled={!unlockedPrivKey || !inputText.trim()}
-                  className="w-12 h-12 rounded-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-slate-500 flex items-center justify-center transition-colors shrink-0"
+                  className="w-12 h-12 rounded-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-ventsafe-muted flex items-center justify-center transition-colors shrink-0"
                 >
                   <Send size={18} />
                 </button>
@@ -702,8 +702,8 @@ export function SanctuaryUI() {
           </>
         ) : (
           <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-4 opacity-40">
-            <MessageSquare size={56} className="text-slate-600" />
-            <p className="text-slate-500 text-center max-w-xs">
+            <MessageSquare size={56} className="text-ventsafe-foreground/70" />
+            <p className="text-ventsafe-muted text-center max-w-xs">
               {sessions.length === 0
                 ? "Follow a counsellor from Explore to start a confidential chat."
                 : "Select a counsellor from the sidebar to open the chat."}

@@ -27,14 +27,14 @@ type Category =
   | "loneliness";
 
 const CATEGORIES: { value: Category; label: string; color: string }[] = [
-  { value: "general", label: "General", color: "bg-gray-100 text-gray-700 border-gray-200" },
+  { value: "general", label: "General", color: "bg-ventsafe-muted text-ventsafe-foreground/80 border-ventsafe-border" },
   { value: "academic_pressure", label: "Academic Pressure", color: "bg-blue-100 text-blue-700 border-blue-200" },
   { value: "financial_stress", label: "Financial Stress", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
   { value: "relationships", label: "Relationships", color: "bg-pink-100 text-pink-700 border-pink-200" },
   { value: "family_issues", label: "Family Issues", color: "bg-orange-100 text-orange-700 border-orange-200" },
   { value: "health_concerns", label: "Health Concerns", color: "bg-green-100 text-green-700 border-green-200" },
   { value: "career_anxiety", label: "Career Anxiety", color: "bg-purple-100 text-purple-700 border-purple-200" },
-  { value: "loneliness", label: "Loneliness", color: "bg-slate-100 text-slate-700 border-slate-200" },
+  { value: "loneliness", label: "Loneliness", color: "bg-ventsafe-muted text-ventsafe-foreground/80 border-ventsafe-border" },
 ];
 
 const STUDENT_PRIVACY_OPTIONS: { value: Privacy; label: string; description: string; icon: React.ReactNode }[] = [

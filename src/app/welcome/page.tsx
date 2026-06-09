@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/shared/Logo";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/shared/Footer";
 
@@ -53,8 +54,13 @@ export default function WelcomePage() {
 
   return (
     <div className="min-h-screen bg-ventsafe-background flex flex-col">
-      <header className="p-6">
-        <Logo />
+      <header className="p-6 flex items-center justify-between w-full relative">
+        <div className="flex-1 flex justify-center md:justify-start">
+          <Logo />
+        </div>
+        <div className="absolute right-6 top-6">
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-6">

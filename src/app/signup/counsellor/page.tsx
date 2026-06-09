@@ -12,6 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Footer } from "@/components/shared/Footer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -358,8 +359,13 @@ export default function CounsellorSignupPage() {
 
   return (
     <div className="min-h-screen bg-ventsafe-background flex flex-col">
-      <header className="p-6 md:pl-25 flex items-center justify-center md:justify-start">
-        <Logo />
+      <header className="p-6 md:pl-25 flex items-center justify-between w-full relative">
+        <div className="flex-1 flex justify-center md:justify-start">
+          <Logo />
+        </div>
+        <div className="absolute right-6 top-6">
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-6 py-12">
@@ -757,7 +763,7 @@ export default function CounsellorSignupPage() {
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {seedPhrase.split(" ").map((word, i) => (
-                      <div key={i} className="flex items-center bg-white border border-ventsafe-border/50 rounded-md px-2 py-1.5">
+                      <div key={i} className="flex items-center bg-ventsafe-card border border-ventsafe-border/50 rounded-md px-2 py-1.5">
                         <span className="text-ventsafe-foreground/40 text-[10px] w-4 font-mono">{i + 1}.</span>
                         <span className="text-sm font-medium text-ventsafe-foreground flex-1 text-center">{word}</span>
                       </div>
@@ -781,7 +787,7 @@ export default function CounsellorSignupPage() {
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        className="absolute bottom-full left-0 mb-1 w-full bg-white border border-ventsafe-border rounded-lg shadow-lg z-50 overflow-hidden"
+                        className="absolute bottom-full left-0 mb-1 w-full bg-ventsafe-card border border-ventsafe-border rounded-lg shadow-lg z-50 overflow-hidden"
                       >
                         {DOWNLOAD_FORMATS.map((format) => (
                           <button

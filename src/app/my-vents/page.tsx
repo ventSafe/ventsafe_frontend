@@ -60,7 +60,7 @@ export default function MyVentsPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white border border-ventsafe-border rounded-ventsafe-md p-4 animate-pulse"
+                className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-4 animate-pulse"
               >
                 <div className="flex gap-3 mb-3">
                   <div className="w-9 h-9 rounded-full bg-ventsafe-muted" />
@@ -77,7 +77,7 @@ export default function MyVentsPage() {
             ))}
           </div>
         ) : posts.length === 0 ? (
-          <div className="bg-white border border-ventsafe-border rounded-ventsafe-md p-10 text-center">
+          <div className="bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-md p-10 text-center">
             <div className="text-4xl mb-3">💬</div>
             <p className="text-base font-semibold text-ventsafe-foreground">
               No vents yet

@@ -9,6 +9,7 @@ import {
   Briefcase, Home, AlertTriangle, Pill, Shield,
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useRouter } from "next/navigation";
 import { STORAGE_KEYS } from "@/config/constants";
 import { Footer } from "@/components/shared/Footer";
@@ -216,8 +217,13 @@ export default function CounsellorOnboardingPage() {
 
   return (
     <div className="min-h-screen bg-ventsafe-background flex flex-col">
-      <header className="p-6 md:pl-25 flex items-center justify-center md:justify-start">
-        <Logo />
+      <header className="p-6 md:pl-25 flex items-center justify-between w-full relative">
+        <div className="flex-1 flex justify-center md:justify-start">
+          <Logo />
+        </div>
+        <div className="absolute right-6 top-6">
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-6 py-12">
@@ -279,7 +285,7 @@ export default function CounsellorOnboardingPage() {
                     onClick={() => setTier("volunteer")}
                     className={`w-full p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${tier === "volunteer"
                         ? "border-ventsafe-foreground bg-ventsafe-foreground/8 shadow-lg shadow-ventsafe-foreground/10"
-                        : "border-ventsafe-foreground/15 bg-white hover:border-ventsafe-foreground/40"
+                        : "border-ventsafe-foreground/15 bg-ventsafe-card hover:border-ventsafe-foreground/40"
                       }`}
                   >
                     <div className="flex items-start gap-4">
@@ -557,7 +563,7 @@ export default function CounsellorOnboardingPage() {
                           onClick={() => toggleSpec(label)}
                           className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer ${selected
                               ? "border-ventsafe-foreground bg-ventsafe-foreground text-white shadow-md shadow-ventsafe-foreground/20"
-                              : "border-ventsafe-foreground/15 bg-white text-ventsafe-foreground hover:border-ventsafe-foreground/40"
+                              : "border-ventsafe-foreground/15 bg-ventsafe-card text-ventsafe-foreground hover:border-ventsafe-foreground/40"
                             }`}
                         >
                           <Icon className="w-4 h-4 shrink-0" />

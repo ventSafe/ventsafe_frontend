@@ -171,7 +171,7 @@ export default function AvailableCounsellorsPage() {
                       {(c.anonymous_name || "?").charAt(0)}
                     </div>
                     <div
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-ventsafe-card ${
                         c.is_online ? "bg-green-500" : "bg-gray-300"
                       }`}
                     />
