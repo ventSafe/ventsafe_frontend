@@ -372,13 +372,31 @@ export function Header() {
                           >
                             Log In
                           </Link>
-                          <Link 
-                            href="/signup" 
-                            onClick={() => setMobileMenuOpen(false)} 
-                            className="w-full py-2 text-center text-sm font-medium bg-ventsafe-foreground text-ventsafe-background rounded-lg"
-                          >
-                            Sign Up
-                          </Link>
+                          
+                          <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-ventsafe-border/50">
+                            <span className="text-xs font-semibold text-ventsafe-foreground/60 px-1 uppercase tracking-wider">Sign Up / Login</span>
+                            <button
+                              onClick={() => { setMobileMenuOpen(false); router.push("/signup"); }}
+                              className="w-full text-left px-3 py-2.5 text-sm bg-ventsafe-foreground text-ventsafe-background hover:opacity-90 rounded-lg transition-colors flex flex-col gap-0.5"
+                            >
+                              <div className="flex items-center gap-2">
+                                <GraduationCap className="w-4 h-4" />
+                                <span className="font-semibold">{hasStudentAccount ? "Login as Student" : "Sign up as Student"}</span>
+                              </div>
+                              {hasStudentAccount && <span className="text-[10px] text-ventsafe-background/70 ml-6">Saved account detected</span>}
+                            </button>
+                            
+                            <button
+                              onClick={() => { setMobileMenuOpen(false); router.push("/signup/counsellor"); }}
+                              className="w-full text-left px-3 py-2.5 text-sm bg-ventsafe-muted border border-ventsafe-border text-ventsafe-foreground hover:bg-ventsafe-border/50 rounded-lg transition-colors flex flex-col gap-0.5"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Stethoscope className="w-4 h-4" />
+                                <span className="font-semibold">{hasCounsellorAccount ? "Login as Counsellor" : "Sign up as Counsellor"}</span>
+                              </div>
+                              {hasCounsellorAccount && <span className="text-[10px] text-ventsafe-foreground/50 ml-6">Saved account detected</span>}
+                            </button>
+                          </div>
                         </div>
                       </motion.div>
                     )}

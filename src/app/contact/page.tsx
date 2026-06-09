@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Mail, MessageSquare, MapPin, Send, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
+import { Header } from "@/components/layout/Header";
+
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -19,6 +21,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-ventsafe-background text-ventsafe-foreground relative flex flex-col items-center pb-24 font-sans transition-colors duration-300">
+      <Header />
       {/* Background Dot Grid */}
       <div 
         className="absolute inset-0 z-0 opacity-[0.15] dark:opacity-20 pointer-events-none"
