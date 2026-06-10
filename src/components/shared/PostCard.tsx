@@ -468,6 +468,8 @@ export function PostCard({
   const [showReposters, setShowReposters] = useState(false);
 
   const isOwn = post.author_id === viewerUserId;
+  const isRepostCard = post.reposted_by_id === viewerUserId;
+  const canDelete = isOwn || isRepostCard;
   const isLong = post.content.length > 300;
   const displayContent =
     isLong && !expanded ? post.content.slice(0, 300) + "..." : post.content;
@@ -521,12 +523,23 @@ export function PostCard({
   // ── Repost / un-repost ────────────────────────────────────────────────────
 
   const handleRepost = async () => {
-    const isUndoing = post.viewer_has_reposted;
+    // If THIS card is the user's repost, clicking the repost button means UNDO.
+    const isUndoing = post.viewer_has_reposted || isRepostCard;
     if (isUndoing) {
       const confirmUndo = window.confirm("Do you want to undo your repost?");
       if (!confirmUndo) return;
     }
 
+    if (isRepostCard) {
+      // Deleting the repost card undoes the repost
+      const res = await apiDelete(`/posts/${post.id}`, token);
+      if (res.success && onDelete) {
+        onDelete(post.id);
+      }
+      return;
+    }
+
+    // Otherwise, toggle repost on the original post
     const res = await apiPost<RepostResult>(`/posts/${post.id}/repost`, token);
     if (res.success) {
       setPost((p) => ({
@@ -535,8 +548,8 @@ export function PostCard({
         reposts_count: res.data.reposts_count,
       }));
 
-      // If we just UNDID a repost AND this specific card is the repost itself
-      // (identified by having a reposted_by_id), we should remove it from the feed.
+      // If we just UNDID a repost from the original post card, and this card itself was a direct feed of it 
+      // (which shouldn't usually be the case here, but kept for safety)
       if (!res.data.reposted && isUndoing) {
         if (post.reposted_by_id === viewerUserId && onDelete) {
           onDelete(post.id);
@@ -746,9 +759,9 @@ export function PostCard({
                     transition={{ duration: 0.1 }}
                     className="absolute right-0 top-full mt-1 w-44 bg-ventsafe-card border border-ventsafe-border rounded-ventsafe-sm shadow-md z-10 overflow-hidden"
                   >
-                    {isOwn ? (
+                    {canDelete ? (
                       <>
-                        {!post.reposted_by_id && (
+                        {isOwn && !post.reposted_by_id && (
                           <button
                             onClick={() => {
                               setIsEditing(true);
