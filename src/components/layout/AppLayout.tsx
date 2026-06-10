@@ -248,7 +248,7 @@ export { RoleSwitchModal };
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, isInitialized, logout } = useAuth();
+  const { user, isAuthenticated, isInitialized, isLoading, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -407,6 +407,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         href: "/settings",
       },
     ];
+
+  if (!mounted || !isInitialized || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ventsafe-background">
+        <div className="w-8 h-8 border-4 border-ventsafe-border border-t-ventsafe-navy rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <>
