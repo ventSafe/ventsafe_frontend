@@ -92,6 +92,7 @@ interface LikeResult {
 interface RepostResult {
   reposted: boolean;
   reposts_count: number;
+  repost_id?: string;
 }
 
 interface CommentsResult {
@@ -560,6 +561,7 @@ export function PostCard({
       if (res.data.reposted && onRepost) {
         onRepost({
           ...post,
+          id: res.data.repost_id ?? post.id,
           viewer_has_reposted: true,
           reposts_count: res.data.reposts_count,
           reposted_by_name: viewerName ?? "You",
