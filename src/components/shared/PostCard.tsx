@@ -85,7 +85,7 @@ interface ApiResponse<T> {
 }
 
 interface LikeResult {
-  liked: boolean;
+  reaction: "like" | "dislike" | null;
   likes_count: number;
 }
 
@@ -511,7 +511,7 @@ export function PostCard({
     } else {
       setPost((p) => ({
         ...p,
-        viewer_has_liked: res.data.liked,
+        viewer_has_liked: res.data.reaction === "like",
         likes_count: res.data.likes_count,
       }));
     }
