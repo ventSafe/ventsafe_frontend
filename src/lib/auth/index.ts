@@ -242,4 +242,22 @@ export async function checkAssociatedAccount(
   }
 }
 
+export async function updateAnonymousNameOnServer(
+  anonymousName: string,
+): Promise<ApiResponse<{ user: User }>> {
+  try {
+    const response = await apiFetch<{ user: User }>("/auth/anonymous-name", {
+      method: "PUT",
+      body: JSON.stringify({ anonymousName }),
+      headers: getAuthHeader(),
+    });
+    return response;
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Network error",
+    };
+  }
+}
+
 

@@ -19,11 +19,12 @@ import {
   UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
-import { checkAccountExists, checkAssociatedAccount, logout } from "@/lib/auth";
+import { checkAccountExists, checkAssociatedAccount, logout, updateAnonymousNameOnServer } from "@/lib/auth";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Logo } from "@/components/shared/Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { LogoutModal } from "@/components/shared/LogoutModal";
+import { ChangeNameModal } from "@/components/shared/ChangeNameModal";
 import { ManiLifebuoy } from "@/components/shared/ManiLifebuoy";
 import { PanicButton } from "@/components/shared/PanicButton";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -248,9 +249,10 @@ export { RoleSwitchModal };
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, isInitialized, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isInitialized, isLoading, logout, setUser, gender } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showChangeNameModal, setShowChangeNameModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -377,6 +379,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     setShowRoleModal(true);
   };
 
+  const handleConfirmChangeName = async (newName: string) => {
+    try {
+      const res = await updateAnonymousNameOnServer(newName);
+      if (res.success && res.data?.user) {
+        const updatedUser = res.data.user;
+        localStorage.setItem("ventsafe-anon-name", updatedUser.anonymousName || "");
+        if (userRole === "counselor") {
+          localStorage.setItem("ventsafe-counsellor-anon-name", updatedUser.anonymousName || "");
+        }
+        localStorage.setItem("ventsafe-user-data", JSON.stringify(updatedUser));
+        
+        setUser(updatedUser);
+        toast.success("Anonymous name updated successfully!");
+        setShowChangeNameModal(false);
+      } else {
+        toast.error(res.error || "Failed to update anonymous name.");
+      }
+    } catch {
+      toast.error("An error occurred while updating name.");
+    }
+  };
+
   const DROPDOWN_ITEMS: {
     icon: React.ReactNode;
     label: string;
@@ -388,7 +412,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         label: "Change anon name",
         onClick: () => {
           setDropdownOpen(false);
-          setShowLogoutModal(true);
+          setShowChangeNameModal(true);
         },
       },
       {
@@ -592,6 +616,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         currentName={anonymousName}
         onConfirm={handleLogout}
         onCancel={() => setShowLogoutModal(false)}
+      />
+
+      <ChangeNameModal
+        isOpen={showChangeNameModal}
+        currentName={anonymousName}
+        gender={gender}
+        onConfirm={handleConfirmChangeName}
+        onCancel={() => setShowChangeNameModal(false)}
       />
 
       <AnimatePresence>
