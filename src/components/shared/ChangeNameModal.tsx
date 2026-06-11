@@ -8,7 +8,9 @@ import { generateAnonymousName } from "@/lib/utils";
 interface ChangeNameModalProps {
   isOpen: boolean;
   currentName: string;
-  gender: "male" | "female";
+  role: string;
+  publicKey: string;
+  publicKeyFingerprint?: string;
   onConfirm: (newName: string) => Promise<void>;
   onCancel: () => void;
 }
@@ -16,7 +18,9 @@ interface ChangeNameModalProps {
 export function ChangeNameModal({
   isOpen,
   currentName,
-  gender,
+  role,
+  publicKey,
+  publicKeyFingerprint,
   onConfirm,
   onCancel,
 }: ChangeNameModalProps) {
@@ -24,7 +28,7 @@ export function ChangeNameModal({
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const handleGenerate = () => {
-    const newName = generateAnonymousName(gender || "female");
+    const newName = generateAnonymousName(role, publicKey, publicKeyFingerprint);
     setSuggestedName(newName);
   };
 

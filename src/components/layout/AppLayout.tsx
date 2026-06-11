@@ -621,7 +621,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <ChangeNameModal
         isOpen={showChangeNameModal}
         currentName={anonymousName}
-        gender={gender}
+        role={user?.role ?? "student"}
+        publicKey={user?.publicKey ?? ""}
+        publicKeyFingerprint={user?.publicKeyFingerprint}
         onConfirm={handleConfirmChangeName}
         onCancel={() => setShowChangeNameModal(false)}
       />

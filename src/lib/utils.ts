@@ -23,26 +23,23 @@ export function truncate(text: string, length: number): string {
   return text.substring(0, length) + '...';
 }
 
-export function generateAnonymousName(gender: 'male' | 'female'): string {
-  const maleNames = [
-    'Adebayo', 'Chukwuma', 'Emeka', 'Femi', 'Ibrahim', 'Kunle', 'Musa', 'Obinna',
-    'Segun', 'Tunde', 'Yusuf', 'Akin', 'Bola', 'Chidi', 'David', 'Emmanuel',
-    'Godwin', 'Hassan', 'Ikechukwu', 'Joseph', 'Kehinde', 'Lekan', 'Mohammed',
-    'Nnamdi', 'Ola', 'Peter', 'Rasheed', 'Samuel', 'Taiwo', 'Victor'
-  ];
+export function generateAnonymousName(
+  role: string,
+  publicKey: string,
+  publicKeyFingerprint?: string
+): string {
+  const isCounsellor = role && (role.startsWith("counselor") || role.startsWith("counsellor"));
+  const prefix = isCounsellor ? "counselor" : "student";
   
-  const femaleNames = [
-    'Adaeze', 'Amina', 'Blessing', 'Chiamaka', 'Damilola', 'Ebere', 'Fatima',
-    'Grace', 'Hauwa', 'Ifeoma', 'Joy', 'Kemi', 'Latifat', 'Mary', 'Ngozi',
-    'Omotola', 'Peace', 'Queen', 'Rakiya', 'Sarah', 'Tope', 'Uju', 'Victoria',
-    'Wunmi', 'Yetunde', 'Zainab', 'Chioma', 'Funke', 'Halima', 'Stella'
-  ];
+  let keyPart = "";
+  if (publicKeyFingerprint) {
+    keyPart = publicKeyFingerprint.replace(/:/g, "").toLowerCase();
+  } else if (publicKey) {
+    keyPart = publicKey.replace(/^0x/i, "").toLowerCase();
+  }
   
-  const names = gender === 'male' ? maleNames : femaleNames;
-  const randomName = names[Math.floor(Math.random() * names.length)];
-  const number = Math.floor(Math.random() * 9999);
-  
-  return `${randomName}${number}`;
+  const shortFingerprint = keyPart.substring(0, 8);
+  return `${prefix}_${shortFingerprint}`;
 }
 
 export function sleep(ms: number): Promise<void> {
