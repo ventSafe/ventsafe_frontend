@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Providers } from "@/components/providers/ThemeProvider";
 import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
+import { NetworkStatus } from "@/components/shared/NetworkStatus";
 
 // Configure the Montserrat font with variable option
 const montserrat = Montserrat({
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="en" className={montserrat.variable} suppressHydrationWarning>
       <body className="font-ventsafe-font" suppressHydrationWarning>
         <Providers>
+          <NetworkStatus />
           {/* AuthProvider runs checkAuth() once on every page load */}
           <AuthProvider>{children}</AuthProvider>
           <Toaster position="top-center" richColors />
