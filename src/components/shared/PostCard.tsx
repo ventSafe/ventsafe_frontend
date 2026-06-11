@@ -549,11 +549,13 @@ export function PostCard({
         reposts_count: res.data.reposts_count,
       }));
 
-      // If we just UNDID a repost from the original post card, and this card itself was a direct feed of it 
-      // (which shouldn't usually be the case here, but kept for safety)
-      if (!res.data.reposted && isUndoing) {
-        if (post.reposted_by_id === viewerUserId && onDelete) {
-          onDelete(post.id);
+      if (!res.data.reposted) {
+        // User just un-reposted. Remove the repost card from the feed immediately.
+        // The backend returns the repost_id of the card that was deleted.
+        // We call onDelete with that id so the parent removes it without a reload.
+        const repostCardId = res.data.repost_id;
+        if (repostCardId && onDelete) {
+          onDelete(repostCardId);
         }
       }
 
