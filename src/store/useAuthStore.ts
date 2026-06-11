@@ -16,6 +16,31 @@ import { create } from "zustand";
 import { User } from "@/types";
 import { API_BASE_URL, STORAGE_KEYS, ROUTES } from "@/config/constants";
 
+// Helper to check if a JWT is expired locally
+const isTokenExpired = (token: string) => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // Add a 10-second buffer to consider it expired just before it actually does
+    return payload.exp * 1000 <= Date.now() + 10000;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Helper for fetch with timeout
+const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 3000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+};
+
 interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
@@ -45,11 +70,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   // ── Step 2: Try refreshing the access token ──────────────────────────────
   refreshAccessToken: async (): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/refresh`, {
         method: "POST",
         credentials: "include", // sends httpOnly refresh token cookie automatically
         headers: { "Content-Type": "application/json" },
-      });
+      }, 3000); // 3-second timeout
 
       if (!res.ok) return false;
 
@@ -72,41 +97,49 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
     if (!token) {
-      // No access token — try refresh (maybe they have a valid refresh cookie)
-      const refreshed = await get().refreshAccessToken();
-      if (!refreshed) {
-        set({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-          isInitialized: true,
-        });
-        return;
-      }
+      // If there's no token at all, they are logged out or a new user.
+      // Don't waste time checking refresh token, go straight to login.
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isInitialized: true,
+      });
+      return;
     }
 
     // Try /auth/me with current (or newly refreshed) access token
     const tryFetchMe = async (): Promise<boolean> => {
-      const currentToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      let currentToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
       if (!currentToken) return false;
 
+      // Check if token is already expired locally
+      if (isTokenExpired(currentToken)) {
+        const refreshed = await get().refreshAccessToken();
+        if (!refreshed) return false;
+        currentToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+        if (!currentToken) return false;
+      }
+
       try {
-        const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        const res = await fetchWithTimeout(`${API_BASE_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${currentToken}` },
           credentials: "include",
-        });
+        }, 3000); // 3-second timeout
 
         if (res.status === 401) {
-          // Access token expired — try to refresh
+          // Access token expired (maybe backend thinks so even if we didn't) — try to refresh
           const refreshed = await get().refreshAccessToken();
           if (!refreshed) return false;
 
           // Retry with new token
           const retryToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-          const retry = await fetch(`${API_BASE_URL}/auth/me`, {
+          if (!retryToken) return false;
+          
+          const retry = await fetchWithTimeout(`${API_BASE_URL}/auth/me`, {
             headers: { Authorization: `Bearer ${retryToken}` },
             credentials: "include",
-          });
+          }, 3000);
 
           if (!retry.ok) return false;
 
