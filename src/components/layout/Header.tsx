@@ -105,11 +105,11 @@ export function Header() {
       // Key-based check
       if (studentKey) {
         const res = await checkAccountExists(studentKey);
-        if (res?.exists) setHasStudentAccount(true);
+        if (res?.exists && res.role === "student") setHasStudentAccount(true);
       }
       if (counsellorKey) {
         const res = await checkAccountExists(counsellorKey);
-        if (res?.exists) setHasCounsellorAccount(true);
+        if (res?.exists && (res.role === "counselor" || res.role === "counsellor_pending")) setHasCounsellorAccount(true);
       }
 
       // Name-based DB check (if logged in, check for existence of other role)

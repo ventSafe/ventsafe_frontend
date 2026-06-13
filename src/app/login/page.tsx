@@ -47,9 +47,9 @@ function LoginContent() {
 
   useEffect(() => {
     // Check if user is recognized on this device
-    const storedEncryptedKey = localStorage.getItem(STORAGE_KEYS.ENCRYPTED_PRIVATE_KEY) || localStorage.getItem("ventsafe-counsellor-encrypted-key");
-    const storedPublicKey = localStorage.getItem(STORAGE_KEYS.PUBLIC_KEY) || localStorage.getItem("ventsafe-counsellor-public-key");
-    const storedName = localStorage.getItem("ventsafe-anon-name") || localStorage.getItem("ventsafe-counsellor-anon-name");
+    const storedEncryptedKey = localStorage.getItem("ventsafe-signup-private-key") || localStorage.getItem(STORAGE_KEYS.ENCRYPTED_PRIVATE_KEY);
+    const storedPublicKey = localStorage.getItem("ventsafe-signup-public-key") || localStorage.getItem(STORAGE_KEYS.PUBLIC_KEY);
+    const storedName = localStorage.getItem("ventsafe-signup-anon-name") || localStorage.getItem("ventsafe-anon-name");
 
     if (storedEncryptedKey && storedPublicKey) {
       setIsRecognized(true);
@@ -146,6 +146,9 @@ function LoginContent() {
             const encrypted = await encryptPrivateKey(keyToUse, pinStr);
             localStorage.setItem(STORAGE_KEYS.ENCRYPTED_PRIVATE_KEY, encrypted);
             localStorage.setItem(STORAGE_KEYS.PUBLIC_KEY, pubKeyToUse);
+            // Save student-specific keys so counsellor logins don't overwrite them
+            localStorage.setItem("ventsafe-signup-public-key", pubKeyToUse);
+            localStorage.setItem("ventsafe-signup-private-key", encrypted);
           }
         } catch {
           setError("Failed to derive keys. Make sure your seed phrase is correct.");

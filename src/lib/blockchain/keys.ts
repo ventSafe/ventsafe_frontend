@@ -112,13 +112,10 @@ export function saveBlockchainIdentity(identity: BlockchainIdentity): void {
 }
 
 export function clearBlockchainIdentity(): void {
-  localStorage.removeItem(STORAGE_KEYS.PUBLIC_KEY);
   localStorage.removeItem(STORAGE_KEYS.ANONYMOUS_ID);
-  localStorage.removeItem(STORAGE_KEYS.ENCRYPTED_PRIVATE_KEY);
   localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER_DATA);
   localStorage.removeItem("ventsafe-anon-name");
-  localStorage.removeItem("ventsafe-signup-public-key");
   localStorage.removeItem("ventsafe-signup-private-key");
   localStorage.removeItem("ventsafe-signup-anon-name");
   localStorage.removeItem("ventsafe-signup-gender");
