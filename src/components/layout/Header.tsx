@@ -365,6 +365,7 @@ export function Header() {
                           ))}
                         </div>
                         <div className="p-3 flex flex-col gap-2">
+                          <span className="text-xs font-semibold text-ventsafe-foreground/60 px-1 uppercase tracking-wider">Sign Up / Login</span>
                           <Link 
                             href="/login" 
                             onClick={() => setMobileMenuOpen(false)} 
@@ -374,7 +375,6 @@ export function Header() {
                           </Link>
                           
                           <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-ventsafe-border/50">
-                            <span className="text-xs font-semibold text-ventsafe-foreground/60 px-1 uppercase tracking-wider">Sign Up / Login</span>
                             <button
                               onClick={() => { setMobileMenuOpen(false); router.push("/signup"); }}
                               className="w-full text-left px-3 py-2.5 text-sm bg-ventsafe-foreground text-ventsafe-background hover:opacity-90 rounded-lg transition-colors flex flex-col gap-0.5"
