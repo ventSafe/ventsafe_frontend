@@ -38,6 +38,7 @@ export function Hero() {
     setMounted(true);
     const hasAccount =
       localStorage.getItem("ventsafe-signup-public-key") ||
+      localStorage.getItem("ventsafe-public-key") ||
       localStorage.getItem("ventsafe-counsellor-public-key");
     if (hasAccount) {
       setIsLoginMode(true);
@@ -51,6 +52,7 @@ export function Hero() {
         // Reset to appropriate mode when closed
         const hasAccount =
           localStorage.getItem("ventsafe-signup-public-key") ||
+          localStorage.getItem("ventsafe-public-key") ||
           localStorage.getItem("ventsafe-counsellor-public-key");
         setTimeout(() => setIsLoginMode(!!hasAccount), 200);
       }

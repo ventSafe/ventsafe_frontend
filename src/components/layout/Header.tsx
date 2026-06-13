@@ -99,7 +99,7 @@ export function Header() {
   // Check for existing accounts
   useEffect(() => {
     async function checkAccounts() {
-      const studentKey = localStorage.getItem("ventsafe-signup-public-key");
+      const studentKey = localStorage.getItem("ventsafe-public-key") || localStorage.getItem("ventsafe-signup-public-key");
       const counsellorKey = localStorage.getItem("ventsafe-counsellor-public-key");
 
       // Key-based check
@@ -310,7 +310,7 @@ export function Header() {
                       >
                         <div className="p-1.5 flex flex-col">
                           <button
-                            onClick={() => { setOpen(false); router.push("/signup"); }}
+                            onClick={() => { setOpen(false); router.push(hasStudentAccount ? "/login" : "/signup"); }}
                             className="w-full text-left px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted rounded-lg transition-colors flex flex-col gap-0.5"
                           >
                             <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export function Header() {
                             {hasStudentAccount && <span className="text-[10px] text-ventsafe-foreground/50 ml-6">Saved account detected</span>}
                           </button>
                           <button
-                            onClick={() => { setOpen(false); router.push("/signup/counsellor"); }}
+                            onClick={() => { setOpen(false); router.push(hasCounsellorAccount ? "/login/counsellor" : "/signup/counsellor"); }}
                             className="w-full text-left px-3 py-2 text-sm text-ventsafe-foreground hover:bg-ventsafe-muted rounded-lg transition-colors flex flex-col gap-0.5"
                           >
                             <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ export function Header() {
                           
                           <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-ventsafe-border/50">
                             <button
-                              onClick={() => { setMobileMenuOpen(false); router.push("/signup"); }}
+                              onClick={() => { setMobileMenuOpen(false); router.push(hasStudentAccount ? "/login" : "/signup"); }}
                               className="w-full text-left px-3 py-2.5 text-sm bg-ventsafe-foreground text-ventsafe-background hover:opacity-90 rounded-lg transition-colors flex flex-col gap-0.5"
                             >
                               <div className="flex items-center gap-2">
@@ -387,7 +387,7 @@ export function Header() {
                             </button>
                             
                             <button
-                              onClick={() => { setMobileMenuOpen(false); router.push("/signup/counsellor"); }}
+                              onClick={() => { setMobileMenuOpen(false); router.push(hasCounsellorAccount ? "/login/counsellor" : "/signup/counsellor"); }}
                               className="w-full text-left px-3 py-2.5 text-sm bg-ventsafe-muted border border-ventsafe-border text-ventsafe-foreground hover:bg-ventsafe-border/50 rounded-lg transition-colors flex flex-col gap-0.5"
                             >
                               <div className="flex items-center gap-2">
