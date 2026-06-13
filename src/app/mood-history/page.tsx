@@ -50,8 +50,8 @@ function moodEmoji(mood: string): string {
 function moodLabel(mood: string): string {
   const map: Record<string, string> = {
     "very-good": "Happy",
-    good: "Good",
-    neutral: "Neutral",
+    good: "Feeling Good",
+    neutral: "Not Happy",   // matches VentSpace slider label
     bad: "Sad",
     "very-bad": "Intense",
   };
@@ -97,11 +97,13 @@ function moodColor(mood: string): string {
  * "very-good" in the DB regardless of slider position.
  */
 function intensityToMood(score: number): string {
-  if (score <= 1) return "very-good";
-  if (score <= 3) return "good";
-  if (score <= 6) return "neutral";
-  if (score <= 8) return "bad";
-  return "very-bad";
+  // intensity_score is 0-10 (Math.round(sliderValue / 10))
+  // Slider snap points: 0=Happy, 25→3=Good, 50→5=NotHappy, 75→8=Sad, 100→10=Intense
+  if (score <= 1)  return "very-good"; // slider 0
+  if (score <= 4)  return "good";      // slider ~25 (intensity 2-4)
+  if (score <= 6)  return "neutral";   // slider ~50 (intensity 5-6)
+  if (score <= 9)  return "bad";       // slider ~75 (intensity 7-9)
+  return "very-bad";                   // slider 100 (intensity 10)
 }
 
 /** Returns the best available mood: prefers DB value unless it's wrong. */
