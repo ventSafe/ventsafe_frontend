@@ -92,29 +92,16 @@ function moodColor(mood: string): string {
 }
 
 /**
- * Derive the real mood from intensity_score (0–10, 0=happy, 10=intense).
- * Used as a fallback because a past bug caused mood to always be saved as
- * "very-good" in the DB regardless of slider position.
+ * Derive mood from intensity_score (0–10, where 0=happy, 10=intense).
+ * This is the ONLY reliable field — the `mood` DB column was historically
+ * broken (always saved "very-good"). We ignore it entirely and use this.
  */
-function intensityToMood(score: number): string {
-  // intensity_score is 0-10 (Math.round(sliderValue / 10))
-  // Slider snap points: 0=Happy, 25→3=Good, 50→5=NotHappy, 75→8=Sad, 100→10=Intense
-  if (score <= 1)  return "very-good"; // slider 0
-  if (score <= 4)  return "good";      // slider ~25 (intensity 2-4)
-  if (score <= 6)  return "neutral";   // slider ~50 (intensity 5-6)
-  if (score <= 9)  return "bad";       // slider ~75 (intensity 7-9)
-  return "very-bad";                   // slider 100 (intensity 10)
-}
-
-/** Returns the best available mood: prefers DB value unless it's wrong. */
-function resolvedMood(entry: { mood: string; intensity_score: number }): string {
-  // If the DB mood is "very-good" but intensity_score indicates otherwise,
-  // the entry was affected by the old bug — re-derive from score.
-  const derivedMood = intensityToMood(entry.intensity_score);
-  if (entry.mood === "very-good" && derivedMood !== "very-good") {
-    return derivedMood;
-  }
-  return entry.mood;
+function moodFromScore(score: number): string {
+  if (score <= 1)  return "very-good"; // slider 0   → Happy
+  if (score <= 4)  return "good";      // slider ~25  → Feeling Good
+  if (score <= 6)  return "neutral";   // slider ~50  → Not Happy
+  if (score <= 9)  return "bad";       // slider ~75  → Sad
+  return "very-bad";                   // slider 100  → Intense
 }
 
 // ─── Time Filter ──────────────────────────────────────────────────────────────
@@ -168,7 +155,7 @@ function StudentMoodHistory({ token }: { token: string }) {
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
     .map((entry) => {
-      const mood = resolvedMood(entry);
+      const mood = moodFromScore(entry.intensity_score);
       return {
         date: format(parseISO(entry.created_at), "MMM d"),
         score: 10 - entry.intensity_score,
@@ -181,7 +168,7 @@ function StudentMoodHistory({ token }: { token: string }) {
   // Mood distribution for bar chart
   const moodCounts = history.reduce(
     (acc, e) => {
-      const m = resolvedMood(e);
+      const m = moodFromScore(e.intensity_score);
       acc[m] = (acc[m] || 0) + 1;
       return acc;
     },
@@ -356,7 +343,7 @@ function StudentMoodHistory({ token }: { token: string }) {
         ) : (
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
             {history.map((entry) => {
-              const mood = resolvedMood(entry);
+              const mood = moodFromScore(entry.intensity_score);
               return (
               <div
                 key={entry.id}
