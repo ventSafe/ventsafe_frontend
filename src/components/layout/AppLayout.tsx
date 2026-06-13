@@ -17,6 +17,9 @@ import {
   GraduationCap,
   ArrowLeftRight,
   UserPlus,
+  Users,
+  LineChart,
+  Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkAccountExists, checkAssociatedAccount, logout, updateAnonymousNameOnServer } from "@/lib/auth";
@@ -419,6 +422,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         icon: <ArrowLeftRight size={15} />,
         label: "Switch account",
         onClick: handleSwitchRoleClick,
+      },
+      {
+        icon: <Users size={15} />,
+        label: "Available Counsellor",
+        href: "/available-counsellors",
+      },
+      {
+        icon: <LineChart size={15} />,
+        label: "Mood History",
+        href: "/mood-history",
+      },
+      {
+        icon: <Globe size={15} />,
+        label: "View Community",
+        href: "/coming-soon",
       },
       {
         icon: <BookMarked size={15} />,
