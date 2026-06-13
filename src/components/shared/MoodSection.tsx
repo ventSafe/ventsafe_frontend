@@ -75,8 +75,8 @@ function StudentMoodSlider({ token, initialScore = 50 }: StudentMoodSliderProps)
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            mood: scoreToMood(value / 10),
-            intensity_score: Math.round(value / 10),
+            mood: scoreToMood(value),           // value is 0-100; scoreToMood expects 0-100
+            intensity_score: Math.round(value / 10), // stored as 0-10
           }),
         });
         setSaved(true);

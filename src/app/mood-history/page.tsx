@@ -91,6 +91,30 @@ function moodColor(mood: string): string {
   return map[mood] ?? "#6b7280";
 }
 
+/**
+ * Derive the real mood from intensity_score (0–10, 0=happy, 10=intense).
+ * Used as a fallback because a past bug caused mood to always be saved as
+ * "very-good" in the DB regardless of slider position.
+ */
+function intensityToMood(score: number): string {
+  if (score <= 1) return "very-good";
+  if (score <= 3) return "good";
+  if (score <= 6) return "neutral";
+  if (score <= 8) return "bad";
+  return "very-bad";
+}
+
+/** Returns the best available mood: prefers DB value unless it's wrong. */
+function resolvedMood(entry: { mood: string; intensity_score: number }): string {
+  // If the DB mood is "very-good" but intensity_score indicates otherwise,
+  // the entry was affected by the old bug — re-derive from score.
+  const derivedMood = intensityToMood(entry.intensity_score);
+  if (entry.mood === "very-good" && derivedMood !== "very-good") {
+    return derivedMood;
+  }
+  return entry.mood;
+}
+
 // ─── Time Filter ──────────────────────────────────────────────────────────────
 
 const PERIODS = [
@@ -141,18 +165,22 @@ function StudentMoodHistory({ token }: { token: string }) {
       (a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
-    .map((entry) => ({
-      date: format(parseISO(entry.created_at), "MMM d"),
-      score: 10 - entry.intensity_score,
-      emoji: moodEmoji(entry.mood),
-      label: moodLabel(entry.mood),
-      fullDate: format(parseISO(entry.created_at), "MMMM d, yyyy 'at' h:mm a"),
-    }));
+    .map((entry) => {
+      const mood = resolvedMood(entry);
+      return {
+        date: format(parseISO(entry.created_at), "MMM d"),
+        score: 10 - entry.intensity_score,
+        emoji: moodEmoji(mood),
+        label: moodLabel(mood),
+        fullDate: format(parseISO(entry.created_at), "MMMM d, yyyy 'at' h:mm a"),
+      };
+    });
 
   // Mood distribution for bar chart
   const moodCounts = history.reduce(
     (acc, e) => {
-      acc[e.mood] = (acc[e.mood] || 0) + 1;
+      const m = resolvedMood(e);
+      acc[m] = (acc[m] || 0) + 1;
       return acc;
     },
     {} as Record<string, number>
@@ -325,15 +353,17 @@ function StudentMoodHistory({ token }: { token: string }) {
           </p>
         ) : (
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-            {history.map((entry) => (
+            {history.map((entry) => {
+              const mood = resolvedMood(entry);
+              return (
               <div
                 key={entry.id}
                 className="flex items-center gap-4 p-4 border border-ventsafe-border/50 rounded-lg hover:bg-ventsafe-muted/30 transition-colors"
               >
-                <div className="text-3xl shrink-0">{moodEmoji(entry.mood)}</div>
+                <div className="text-3xl shrink-0">{moodEmoji(mood)}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ventsafe-foreground">
-                    Feeling {moodLabel(entry.mood)}
+                    Feeling {moodLabel(mood)}
                   </p>
                   <p className="text-xs text-ventsafe-foreground/50 mt-0.5">
                     {format(parseISO(entry.created_at), "MMMM d, yyyy 'at' h:mm a")}
@@ -346,10 +376,11 @@ function StudentMoodHistory({ token }: { token: string }) {
                 </div>
                 <div
                   className="w-2 h-8 rounded-full shrink-0"
-                  style={{ backgroundColor: moodColor(entry.mood) }}
+                  style={{ backgroundColor: moodColor(mood) }}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
